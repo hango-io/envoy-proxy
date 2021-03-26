@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package proxy.common.matcher.v3;
+
+option java_package = "proxy.common.matcher.v3";
+option java_outer_classname = "Common";
+option java_multiple_files = true;
+
+import "envoy/config/route/v3/route_components.proto";
+
+import "validate/validate.proto";
+
+message CommonMatcher {
+  repeated envoy.config.route.v3.HeaderMatcher headers = 1;
+}

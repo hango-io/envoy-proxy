@@ -1,0 +1,13 @@
+bazel-*
+generated
+envoy.stripped
+.vscode/
+*.pyc
+.config
+cscope*
+tags
+*__pycache__*
+clang.bazelrc
+additional_distfiles
+.clang*
+compile_commands.json

@@ -1,0 +1,124 @@
+{
+  "suite_name": "ip-restricton-custom-ip-suite",
+  "suite_conf": {
+    "from_completed_yaml": "./custom-ip.yaml"
+  },
+  "suite_case": [
+    {
+      "case_name": "ip-restriction-black-list0",
+      "request": {
+        "req_url": "http://localhost:8080/anything",
+        "method": "GET",
+        "headers": {
+          "my-custom-header": "127.0.0.13",
+          "host": "one.netease.com"
+        }
+      },
+      "response": {
+        "status": "403",
+        "body": "Your IP is not allowed."
+      }
+    },
+    {
+      "case_name": "ip-restriction-black-list1",
+      "request": {
+        "req_url": "http://localhost:8080/anything",
+        "method": "GET",
+        "headers": {
+          "my-custom-header": "8.8.8.7",
+          "host": "one.netease.com"
+        }
+      },
+      "response": {
+        "status": "403",
+        "body": "Your IP is not allowed."
+      }
+    },
+    {
+      "case_name": "ip-restriction-black-list2",
+      "request": {
+        "req_url": "http://localhost:8080/anything",
+        "method": "GET",
+        "headers": {
+          "host": "one.netease.com",
+          "my-custom-header": "8.8.8.6"
+        }
+      },
+      "response": {
+        "status": "403",
+        "body": "Your IP is not allowed."
+      }
+    },
+    {
+      "case_name": "ip-restriction-black-list3",
+      "request": {
+        "req_url": "http://localhost:8080/anything",
+        "method": "GET",
+        "headers": {
+          "host": "one.netease.com",
+          "my-custom-header": "1.1.1.1"
+        }
+      },
+      "response": {
+        "status": "200"
+      }
+    },
+    {
+      "case_name": "ip-restriction-white-list0",
+      "request": {
+        "req_url": "http://localhost:8080/anything",
+        "method": "GET",
+        "headers": {
+          "host": "two.netease.com",
+          "my-custom-header": "127.0.0.13"
+        }
+      },
+      "response": {
+        "status": "200"
+      }
+    },
+    {
+      "case_name": "ip-restriction-white-list1",
+      "request": {
+        "req_url": "http://localhost:8080/anything",
+        "method": "GET",
+        "headers": {
+          "host": "two.netease.com",
+          "my-custom-header": "8.8.8.7"
+        }
+      },
+      "response": {
+        "status": "200"
+      }
+    },
+    {
+      "case_name": "ip-restriction-white-list2",
+      "request": {
+        "req_url": "http://localhost:8080/anything",
+        "method": "GET",
+        "headers": {
+          "host": "two.netease.com",
+          "my-custom-header": "8.8.8.6"
+        }
+      },
+      "response": {
+        "status": "200"
+      }
+    },
+    {
+      "case_name": "ip-restriction-white-list3",
+      "request": {
+        "req_url": "http://localhost:8080/anything",
+        "method": "GET",
+        "headers": {
+          "host": "two.netease.com",
+          "my-custom-header": "1.1.1.1"
+        }
+      },
+      "response": {
+        "status": "403",
+        "body": "Your IP is not allowed."
+      }
+    }
+  ]
+}

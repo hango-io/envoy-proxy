@@ -1,0 +1,155 @@
+{
+  "suite_name": "basic-route-common-suite",
+  "suite_conf": {
+    "from_completed_yaml": "./basic_route.yaml"
+  },
+  "suite_case": [
+    {
+      "case_name": "basic-route-prefix-route-hit-1",
+      "request": {
+        "req_url": "http://localhost:8080/anything",
+        "method": "GET",
+        "headers": {
+          "host": "a.test.com"
+        }
+      },
+      "response": {
+        "status": "200"
+      }
+    },
+    {
+      "case_name": "basic-route-prefix-route-hit-2",
+      "request": {
+        "req_url": "http://localhost:8080/anything/abc",
+        "method": "GET",
+        "headers": {
+          "host": "a.test.com"
+        }
+      },
+      "response": {
+        "status": "200"
+      }
+    },
+    {
+      "case_name": "basic-route-prefix-route-miss",
+      "request": {
+        "req_url": "http://localhost:8080/anythin",
+        "method": "GET",
+        "headers": {
+          "host": "a.test.com"
+        }
+      },
+      "response": {
+        "status": "404"
+      }
+    },
+    {
+      "case_name": "basic-route-path-route-hit",
+      "request": {
+        "req_url": "http://localhost:8080/anything",
+        "method": "GET",
+        "headers": {
+          "host": "b.test.com"
+        }
+      },
+      "response": {
+        "status": "200"
+      }
+    },
+    {
+      "case_name": "basic-route-path-route-miss",
+      "request": {
+        "req_url": "http://localhost:8080/anything/abc",
+        "method": "POST",
+        "headers": {
+          "host": "b.test.com"
+        }
+      },
+      "response": {
+        "status": "404"
+      }
+    },
+    {
+      "case_name": "basic-route-regex-route-hit-1",
+      "request": {
+        "req_url": "http://localhost:8080/123abc456",
+        "method": "GET",
+        "headers": {
+          "host": "c.test.com"
+        }
+      },
+      "response": {
+        "status": "200"
+      }
+    },
+    {
+      "case_name": "basic-route-regex-route-hit-2",
+      "request": {
+        "req_url": "http://localhost:8080/efgabchlk",
+        "method": "GET",
+        "headers": {
+          "host": "c.test.com"
+        }
+      },
+      "response": {
+        "status": "200"
+      }
+    },
+    {
+      "case_name": "basic-route-regex-route-hit-3",
+      "request": {
+        "req_url": "http://localhost:8080/#|$abc&*@",
+        "method": "GET",
+        "headers": {
+          "host": "c.test.com"
+        }
+      },
+      "response": {
+        "status": "404"
+      }
+    },
+    {
+      "case_name": "basic-route-regex-route-miss",
+      "request": {
+        "req_url": "http://localhost:8080/1234abc5678",
+        "method": "GET",
+        "headers": {
+          "host": "c.test.com"
+        }
+      },
+      "response": {
+        "status": "404"
+      }
+    },
+    {
+      "case_name": "basic-route-direct-response",
+      "request": {
+        "req_url": "http://localhost:8080/direct",
+        "method": "GET",
+        "headers": {
+          "host": "d.test.com"
+        }
+      },
+      "response": {
+        "status": "233",
+        "body": "abcdefghijk"
+      }
+    },
+    {
+      "case_name": "basic-route-redirect-response",
+      "request": {
+        "req_url": "http://localhost:8080/redirect",
+        "method": "GET",
+        "headers": {
+          "host": "d.test.com"
+        }
+      },
+      "response": {
+        "status": "301",
+        "headers": {
+          "location": "http://baidu.com/path_after_redirect"
+        }
+      }
+    }
+  ]
+}

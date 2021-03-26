@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package proxy.filters.http.static_downgrade.v2;
+
+option java_package = "proxy.filters.http.static_downgrade.v2";
+option java_outer_classname = "StaticDowngradeProto";
+option java_multiple_files = true;
+
+import "api/proxy/common/matcher/v3/matcher.proto";
+import "envoy/config/core/v3/base.proto";
+
+import "validate/validate.proto";
+
+message ProtoCommonConfig {}
+
+message StaticResponse {
+  uint32 http_status = 1 [ (validate.rules).uint32 = {gte : 200, lt : 600} ];
+  repeated envoy.config.core.v3.HeaderValue headers = 2;
+  envoy.config.core.v3.DataSource body = 3;
+}
+
+message DowngradeConfig {
+  proxy.common.matcher.v3.CommonMatcher downgrade_rqx = 1;
+  proxy.common.matcher.v3.CommonMatcher downgrade_rpx = 2
+      [ (validate.rules).message.required = true ];
+
+  StaticResponse static_response = 3
+      [ (validate.rules).message.required = true ];
+}
+
+message ProtoRouteConfig {
+  // to determine downgrade or not
+  proxy.common.matcher.v3.CommonMatcher downgrade_rqx = 1;
+  proxy.common.matcher.v3.CommonMatcher downgrade_rpx = 2
+      [ (validate.rules).message.required = true ];
+
+  StaticResponse static_response = 3
+      [ (validate.rules).message.required = true ];
+
+  repeated DowngradeConfig specific_configs = 4
+      [ (validate.rules).repeated .max_items = 9 ];
+}

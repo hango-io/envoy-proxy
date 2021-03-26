@@ -1,0 +1,10 @@
+# Envoy-NetEase specific Bazel build/test options.
+
+import %workspace%/envoy/.bazelrc
+
+build --cxxopt -Wno-error=old-style-cast
+build:clang --cxxopt -Wno-error=old-style-cast
+build:clang --cxxopt -Wno-error=unused-private-field
+build:clang --copt "-D USE_VECTOR_MOCK_MAP"
+build:clang --cxxopt "-D USE_VECTOR_MOCK_MAP"
+build:clang --copt "-D NULL_PLUGIN"

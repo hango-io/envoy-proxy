@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package proxy.filters.http.local_limit.v2;
+
+option java_package = "proxy.filters.http.local_limit.v2";
+option java_outer_classname = "LocalLimitProto";
+option java_multiple_files = true;
+
+import "google/protobuf/wrappers.proto";
+import "validate/validate.proto";
+import "api/proxy/common/matcher/v3/matcher.proto";
+// use_thread_local_token_bucket: true
+// rate_limit:
+// - matcher:
+//     headers:
+//     - name: comefrom
+//       exact_match: rate_limit_test
+//     - name: env
+//       exact_match: dev
+//   config:
+//     # 每天十万次请求
+//     unit: DD
+//     rate: 100000
+// - matcher:
+//     headers:
+//     - name: comefrom
+//       exact_match: rate_limit_test
+//     - name: env
+//       exact_match: dev
+//   config:
+//     # 每小时 1000 次请求
+//     unit: HH
+//     rate: 1000
+
+// 秒、分、时、天
+enum UnitType { SS = 0; MM = 1; HH = 2; DD = 3; }
+
+message RateLimitConfig {
+  UnitType unit = 1;
+  uint64 rate = 2 [(validate.rules).uint64 = {gt : 1}];
+}
+
+message CommonRateLimit {
+  // 本地限流匹配规则。如果 matcher 为空则表示在配置所在路由的所有请求都进行限制。
+  proxy.common.matcher.v3.CommonMatcher matcher = 1;
+  RateLimitConfig config = 2 [(validate.rules).message.required = true];
+}
+
+// Listener http filters config.
+message ProtoCommonConfig {}
+
+message ProtoRouteConfig {
+  // local limit 目前使用 Token Bucket 来实现限流。默认通过锁机制来保证 Token Bucket
+  // 线程安全。为此会带来一些线程争用的开销。如果将该字段设置为 true。将使用 Thread Local
+  // Token Bucket 以保证最好的性能。但是必须注意，此时，由于各个线程数据独立，所以所有限流
+  // 规则的实际上限为 rate * Envoy Worker 数。所以使用者必须对 Envoy 有所了解。默认该
+  // 选项不会开启。
+  google.protobuf.BoolValue use_thread_local_token_bucket = 2;
+  // 多条限流规则。只要任何一条限流规则生效，则触发限流操作。Envoy 将返回本地响应。
+  repeated CommonRateLimit rate_limit = 1;
+}

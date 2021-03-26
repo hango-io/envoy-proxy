@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package proxy.filters.http.iprestriction.v2;
+
+option java_package = "proxy.filters.http.iprestriction.v2";
+option java_outer_classname = "IpRestrictionProto";
+option java_multiple_files = true;
+
+import "validate/validate.proto";
+
+enum ListType {
+  BLACK = 0;
+  WHITE = 1;
+}
+
+// 实际黑白名单配置，用于virtualhost or route级别
+message BlackOrWhiteList {
+  ListType type = 1;
+  repeated string list = 3;
+}
+
+message ListGlobalConfig {
+  // route粒度黑白名单开关，在http_filters下每个filter的config/typed_config中指定
+  // bool use_route_level_list = 1;
+  reserved 1;
+  // get downstream ip from src: Direct: remote address;
+  // X-Forwarded-For: get ip from X-Forwarded-For header; <other header name>:
+  // ...
+  string ip_source_header = 2;
+}

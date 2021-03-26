@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package proxy.filters.http.metadata_hub.v2;
+
+option java_package = "proxy.filters.http.metadata_hub.v2";
+option java_outer_classname = "MetadataHubProto";
+option java_multiple_files = true;
+
+import "validate/validate.proto";
+
+message ProtoCommonConfig {
+  message Record {
+    string name = 1 [(validate.rules).string.min_bytes = 1];
+    string rename = 2;
+  }
+
+  // deprecated
+  repeated Record set_to_metadata = 1;
+
+  // 设置请求 headers 到 filter states 中并根据需要重命名
+  repeated Record decode_headers_to_state = 2;
+  // 设置响应 headers 到 filter states 中并根据需要重命名
+  repeated Record encode_headers_to_state = 3;
+  // 将路由中 metadata 添加到 filter states
+  repeated string route_metadata_to_state = 4;
+}
+
+message ProtoRouteConfig {
+}

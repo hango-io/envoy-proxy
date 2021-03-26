@@ -1,0 +1,132 @@
+{
+  "suite_name": "static-downgrade-common-suite",
+  "suite_conf": {
+    "from_completed_yaml": "./static_downgrade.yaml"
+  },
+  "suite_case": [
+    {
+      "case_name": "static-downgrade-no-downgrade",
+      "request": {
+        "req_url": "http://localhost:8080/status/400",
+        "method": "GET",
+        "headers": {
+          "host": "a.test.com"
+        }
+      },
+      "response": {
+        "status": "400"
+      }
+    },
+    {
+      "case_name": "static-downgrade-has-downgrade",
+      "request": {
+        "req_url": "http://localhost:8080/status/403",
+        "method": "GET",
+        "headers": {
+          "host": "a.test.com"
+        }
+      },
+      "response": {
+        "status": "200",
+        "headers": {
+          "comefrom": "static_downgrade",
+          "create": "wbp"
+        },
+        "body": "(body)+"
+      }
+    },
+    {
+      "case_name": "static-downgrade-has-downgrade-has-body",
+      "request": {
+        "req_url": "http://localhost:8080/response-headers?response_from=httpbin",
+        "method": "GET",
+        "headers": {
+          "host": "a.test.com"
+        }
+      },
+      "response": {
+        "status": "200",
+        "headers": {
+          "response_from": "origin_httpbin_replaced_by_downgrade",
+          "create": "wbp"
+        },
+        "body": "replaced_by_downgrade"
+      }
+    },
+    {
+      "case_name": "static-downgrade-no-config",
+      "request": {
+        "req_url": "http://localhost:8080/status/403",
+        "method": "GET",
+        "headers": {
+          "host": "b.test.com"
+        }
+      },
+      "response": {
+        "status": "403"
+      }
+    },
+    {
+      "case_name": "static-downgrade-downgrade-rqx-not-match-1",
+      "request": {
+        "req_url": "http://localhost:8080/status/403",
+        "method": "GET",
+        "headers": {
+          "host": "c.test.com",
+          "reqeust_from": "zyxtest"
+        }
+      },
+      "response": {
+        "status": "403"
+      }
+    },
+    {
+      "case_name": "static-downgrade-downgrade-rqx-not-match-2",
+      "request": {
+        "req_url": "http://localhost:8080/status/403",
+        "method": "GET",
+        "headers": {
+          "host": "c.test.com"
+        }
+      },
+      "response": {
+        "status": "403"
+      }
+    },
+    {
+      "case_name": "static-downgrade-downgrade-rqx-match",
+      "request": {
+        "req_url": "http://localhost:8080/status/403",
+        "method": "GET",
+        "headers": {
+          "host": "c.test.com",
+          "reqeust_from": "wbptest"
+        }
+      },
+      "response": {
+        "status": "200",
+        "headers": {
+          "route_host": "c.test.com",
+          "comefrom": "static_downgrade",
+          "create": "wbp"
+        },
+        "body": "(body)+"
+      }
+    },
+    {
+      "case_name": "static-downgrade-no-downgrade-rpx",
+      "#comment": "No downgrade rpx then no downgrade.",
+      "request": {
+        "req_url": "http://localhost:8080/status/403",
+        "method": "GET",
+        "headers": {
+          "host": "d.test.com",
+          "reqeust_from": "wbptest"
+        }
+      },
+      "response": {
+        "status": "403"
+      }
+    }
+  ]
+}
