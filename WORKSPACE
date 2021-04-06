@@ -6,6 +6,11 @@ workspace(name = "envoy_netease")
 # so as not to affect the final project construction                                  #
 #######################################################################################
 
+local_repository(
+    name = "envoy_build_config",
+    path = "bazel/extensions_build_config",
+)
+
 ######################################## Envoy ########################################
 local_repository(
     name = "envoy",

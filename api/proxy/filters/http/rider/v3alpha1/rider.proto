@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package proxy.filters.http.rider.v3alpha1;
+
+option java_outer_classname = "RiderProto";
+option java_multiple_files = true;
+option java_package = "org.proxy.filters.http.rider.v3alpha1";
+option go_package = "v3alpha1";
+
+import "envoy/config/core/v3/base.proto";
+//import "google/protobuf/any.proto";
+//import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+//import "validate/validate.proto";
+
+message VmConfig {
+  string vm_id = 1;
+
+  string package_path = 2;
+}
+
+message LogFile {
+  string path = 1;
+}
+
+message PluginConfig {
+  // Unique name of the Plugin.
+  string name = 1;
+
+  google.protobuf.Struct config = 2;
+
+  VmConfig vm_config = 3;
+
+  envoy.config.core.v3.AsyncDataSource code = 4;
+
+  LogFile log_file = 5;
+
+  // If allow_no_route is False, the filter will not execute the plugin if
+  // there is no route or plugin configuration per virtualhost/route.
+  bool allow_no_route = 6;
+}
+
+message RoutePluginConfig {
+  string name = 1;
+
+  google.protobuf.Struct config = 2;
+}
+
+message FilterConfig {
+  PluginConfig plugin = 1;
+}
+
+message RouteFilterConfig {
+  repeated RoutePluginConfig plugins = 1;
+}
