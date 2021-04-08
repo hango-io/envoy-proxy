@@ -69,6 +69,15 @@ function envoy_binary_build() {
     trap - EXIT
 }
 
+function envoy_test() {
+    setup_clang_toolchain
+    TEST_TARGET="$1"
+
+    echo "bazel test ${BAZEL_BUILD_OPTIONS[@]} $TEST_TARGET "
+
+    trap - EXIT
+}
+
 function copy_files_for_image_build() {
     read RELEASE INTERNAL <<<"$1 $2"
 
@@ -130,6 +139,8 @@ elif [[ "$CI_TARGET" == "compile.debug" ]]; then
     envoy_binary_build debug
 elif [[ $CI_TARGET == "compile.release" ]]; then
     envoy_binary_build release
+elif [[ $CI_TARGET == "test" ]]; then
+    envoy_test $1
 else
     echo "Invalid target."
     exit 1

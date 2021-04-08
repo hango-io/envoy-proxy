@@ -31,18 +31,6 @@ envoy_cc_library(
 )
 
 envoy_cc_library(
-    name = "thread_safe_token_bucket_impl_lib",
-    hdrs = [
-        "proxy_likely.h",
-        "thread_safe_token_bucket_impl.h",
-    ],
-    repository = "@envoy",
-    deps = [
-        "@envoy//source/common/common:token_bucket_impl_lib",
-    ],
-)
-
-envoy_cc_library(
     name = "proxy_token_bucket_lib",
     srcs = ["token_bucket.cc"],
     hdrs = ["token_bucket.h"],
