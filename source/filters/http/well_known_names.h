@@ -17,6 +17,7 @@ public:
   const std::string IpRestriction = "proxy.filters.http.iprestriction";
   const std::string StaticDowngrade = "proxy.filters.http.staticdowngrade";
   const std::string LocalLimit = "proxy.filters.http.locallimit";
+  const std::string Rider = "proxy.filters.http.rider";
 };
 
 typedef ConstSingleton<HttpFilterNameValues> HttpFilterNames;
