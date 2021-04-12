@@ -9,7 +9,6 @@
 
 #include "common/filter_state/plain_state.h"
 
-#include "filters/http/well_known_names.h"
 namespace Envoy {
 namespace Proxy {
 namespace HttpFilters {
@@ -17,7 +16,7 @@ namespace MetadataHub {
 
 class TypedMetadataFactory : public Envoy::Router::HttpRouteTypedMetadataFactory {
 public:
-  std::string name() const override { return HttpFilterNames::get().MetadataHub; }
+  std::string name() const override { return HttpMetadataHubFilter::name(); }
   std::unique_ptr<const Envoy::Config::TypedMetadata::Object>
   parse(const ProtobufWkt::Struct& data) const override {
     return std::make_unique<Common::Metadata::MetadataToSimpleMap>(data);
@@ -88,8 +87,8 @@ void metadataToState(const Envoy::Config::TypedMetadata& metadata,
 
   for (const auto& pair : metadata_object->metadata_values_) {
     filter_state->setData(pair.first,
-                         std::make_unique<Common::FilterState::PlainStateImpl>(pair.second),
-                         StreamInfo::FilterState::StateType::Mutable);
+                          std::make_unique<Common::FilterState::PlainStateImpl>(pair.second),
+                          StreamInfo::FilterState::StateType::Mutable);
     span.setTag(pair.first, pair.second);
   }
 }

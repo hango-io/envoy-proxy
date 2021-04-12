@@ -19,7 +19,6 @@ envoy_cc_library(
     deps = [
         "//api/proxy/filters/http/local_limit/v2:pkg_cc_proto",
         "//source/common/common:proxy_token_bucket_lib",
-        "//source/filters/http:well_known_names",
         "@envoy//source/exe:envoy_common_lib",
     ],
 )

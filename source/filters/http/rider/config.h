@@ -21,7 +21,7 @@ class RiderFilterConfigFactory
     : public Envoy::Extensions::HttpFilters::Common::FactoryBase<FilterConfigProto, RouteConfigProto> {
 
 public:
-  RiderFilterConfigFactory() : FactoryBase(Proxy::HttpFilters::HttpFilterNames::get().Rider) {}
+  RiderFilterConfigFactory() : FactoryBase(Filter::name()) {}
 
 private:
   Http::FilterFactoryCb

@@ -48,7 +48,6 @@ envoy_cc_library(
         "@envoy//source/common/singleton:const_singleton",
         "@envoy//source/common/http:header_utility_lib",
         "//api/proxy/filters/http/rider/v3alpha1:pkg_cc_proto",
-        "//source/filters/http:well_known_names",
     ],
     external_deps = [
         "luajit",

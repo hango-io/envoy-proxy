@@ -12,8 +12,6 @@
 
 #include "common/common/token_bucket.h"
 
-#include "filters/http/well_known_names.h"
-
 namespace Envoy {
 namespace Proxy {
 namespace HttpFilters {
@@ -87,6 +85,10 @@ public:
   ~HttpLocalLimitFilter() = default;
 
   Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap&, bool) override;
+
+  static const std::string& name() {
+    CONSTRUCT_ON_FIRST_USE(std::string, "proxy.filters.http.locallimit");
+  }
 
 private:
   LocalLimitCommonConfig* config_{nullptr};

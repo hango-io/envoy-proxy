@@ -9,7 +9,6 @@
 #include "common/protobuf/utility.h"
 
 #include "extensions/filters/common/lua/wrappers.h"
-#include "filters/http/well_known_names.h"
 
 #include "filters/http/rider/context.h"
 #include "filters/http/rider/vm.h"
@@ -206,6 +205,10 @@ public:
         config_(config) {}
 
   virtual ~Filter() = default;
+
+  static const std::string& name() {
+    CONSTRUCT_ON_FIRST_USE(std::string, "proxy.filters.http.rider");
+  }
 
   Upstream::ClusterManager &clusterManager() {
     return config_.clusterManager();

@@ -63,6 +63,9 @@ function envoy_binary_build() {
 
     echo "bazel build ${BAZEL_BUILD_OPTIONS[@]} -c $COMPILE_TYPE :$ENVOY_BINARY_TARGET"
 
+    # Generate extensions.
+    ./source/generator.py
+
     bazel build ${BAZEL_BUILD_OPTIONS[@]} -c "$COMPILE_TYPE" :"$ENVOY_BINARY_TARGET"
     strip -g bazel-bin/"$ENVOY_BINARY_TARGET" -o bazel-bin/"${ENVOY_BINARY_TARGET}.stripped"
 
