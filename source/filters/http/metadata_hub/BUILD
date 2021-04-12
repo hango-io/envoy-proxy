@@ -17,7 +17,6 @@ envoy_cc_library(
         "//api/proxy/filters/http/metadata_hub/v2:pkg_cc_proto",
         "//source/common/filter_state:plain_state_impl",
         "//source/common/metadata:typed_metadata_lib",
-        "//source/filters/http:well_known_names",
         "@envoy//include/envoy/stream_info:filter_state_interface",
         "@envoy//source/exe:envoy_common_lib",
     ],

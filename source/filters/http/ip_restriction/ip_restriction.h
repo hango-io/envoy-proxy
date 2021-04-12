@@ -21,7 +21,6 @@
 #include "common/http/header_utility.h"
 #include "common/network/cidr_range.h"
 #include "common/singleton/const_singleton.h"
-#include "filters/http/well_known_names.h"
 #include "envoy/stats/scope.h"
 #include "envoy/stats/stats_macros.h"
 
@@ -106,6 +105,10 @@ public:
   HttpIpRestrictionFilter(const ListGlobalConfig* config) : config_(config) {}
 
   Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap& headers, bool) override;
+
+  static const std::string& name() {
+    CONSTRUCT_ON_FIRST_USE(std::string, "proxy.filters.http.iprestriction");
+  }
 
 private:
   const ListGlobalConfig* config_{nullptr};

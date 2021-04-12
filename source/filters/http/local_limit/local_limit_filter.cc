@@ -37,8 +37,8 @@ Http::FilterHeadersStatus HttpLocalLimitFilter::decodeHeaders(Http::RequestHeade
     return Http::FilterHeadersStatus::Continue;
   }
 
-  auto route_config = Http::Utility::resolveMostSpecificPerFilterConfig<LocalLimitRouteConfig>(
-      HttpFilterNames::get().LocalLimit, route);
+  auto route_config =
+      Http::Utility::resolveMostSpecificPerFilterConfig<LocalLimitRouteConfig>(name(), route);
 
   if (!route_config) {
     ENVOY_LOG(debug, "No route or vh config local rate limit and continue filters chain");

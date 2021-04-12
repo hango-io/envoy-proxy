@@ -55,7 +55,7 @@ namespace ${CAMEL_CASE_NAME} {
 class Factory
     : public Extensions::HttpFilters::Common::FactoryBase<ProtoCommonConfig, ProtoRouteConfig> {
 public:
-  Factory() : FactoryBase("proxy.filters.http.${SNAKE_CASE_NAME}") {}
+  Factory() : FactoryBase(Filter::name()) {}
 
 private:
   Http::FilterFactoryCb
@@ -150,6 +150,10 @@ public:
 
   Http::FilterHeadersStatus encodeHeaders(Http::ResponseHeaderMap&, bool) override;
 
+  static const std::string& name() {
+    CONSTRUCT_ON_FIRST_USE(std::string, "proxy.filters.http.${SNAKE_CASE_NAME}");
+  }
+
 private:
   CommonConfig* config_{nullptr};
 };
@@ -182,7 +186,6 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         "//api/proxy/filters/http/${SNAKE_CASE_NAME}/v2:pkg_cc_proto",
-        "//source/filters/http:well_known_names",
         "@envoy//source/exe:envoy_common_lib",
     ],
 )

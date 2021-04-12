@@ -15,8 +15,6 @@
 
 #include "extensions/filters/common/lua/wrappers.h"
 
-#include "filters/http/well_known_names.h"
-
 namespace Envoy {
 namespace Proxy {
 namespace HttpFilters {
@@ -160,10 +158,10 @@ Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap &headers,
     lookupPerFilterConfig(
         config_.pluginName(), route_config_,
         dynamic_cast<const RouteConfig *>(route->perFilterConfig(
-            Proxy::HttpFilters::HttpFilterNames::get().Rider)),
+            name())),
         dynamic_cast<const RouteConfig *>(
             route_entry->virtualHost().perFilterConfig(
-                Proxy::HttpFilters::HttpFilterNames::get().Rider)));
+                name())));
   }
 
   request_headers_ = &headers;

@@ -94,14 +94,15 @@ def create_http_filter(filter):
     ] = filter_template.http_filter.HTTP_FILTER_FILTER_BUILD_T
 
     http_template[
-        "./api/netease/filters/http/{}/v2/{}.proto".format(
+        "./api/proxy/filters/http/{}/v2/{}.proto".format(
             filter["SNAKE_CASE_NAME"],
             filter["SNAKE_CASE_NAME"],
         )
     ] = filter_template.http_filter.HTTP_FILTER_PROTO_T
 
     http_template[
-        "./api/netease/filters/http/{}/v2/BUILD".format(filter["SNAKE_CASE_NAME"])
+        "./api/proxy/filters/http/{}/v2/BUILD".format(
+            filter["SNAKE_CASE_NAME"])
     ] = filter_template.http_filter.HTTP_FILTER_PROTO_BUILD_T
 
     for k, v in http_template.items():

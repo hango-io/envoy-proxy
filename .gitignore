@@ -11,3 +11,4 @@ clang.bazelrc
 additional_distfiles
 .clang*
 compile_commands.json
+source/extensions.bzl

@@ -59,6 +59,10 @@ public:
   Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap&, bool) override;
   Http::FilterHeadersStatus encodeHeaders(Http::ResponseHeaderMap&, bool) override;
 
+  static const std::string& name() {
+    CONSTRUCT_ON_FIRST_USE(std::string, "proxy.filters.http.metadatahub");
+  }
+
 private:
   MetadataHubCommonConfig* config_{nullptr};
 };

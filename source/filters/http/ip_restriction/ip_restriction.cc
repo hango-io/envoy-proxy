@@ -145,8 +145,8 @@ Http::FilterHeadersStatus HttpIpRestrictionFilter::decodeHeaders(Http::RequestHe
     return Http::FilterHeadersStatus::Continue;
   }
 
-  auto listConfig = Http::Utility::resolveMostSpecificPerFilterConfig<BlackOrWhiteListConfig>(
-      HttpFilterNames::get().IpRestriction, route);
+  auto listConfig =
+      Http::Utility::resolveMostSpecificPerFilterConfig<BlackOrWhiteListConfig>(name(), route);
 
   if (!listConfig) {
     return Http::FilterHeadersStatus::Continue;

@@ -1,6 +1,5 @@
 #include "filters/http/metadata_hub/config.h"
 #include "filters/http/metadata_hub/metadata_hub.h"
-#include "filters/http/well_known_names.h"
 
 namespace Envoy {
 namespace Proxy {
@@ -21,7 +20,7 @@ ProtobufTypes::MessagePtr HttpMetadataHubConfigFactory::createEmptyConfigProto()
   return std::make_unique<ProtoCommonConfig>();
 }
 
-std::string HttpMetadataHubConfigFactory::name() const { return HttpFilterNames::get().MetadataHub; }
+std::string HttpMetadataHubConfigFactory::name() const { return HttpMetadataHubFilter::name(); }
 
 REGISTER_FACTORY(HttpMetadataHubConfigFactory, Server::Configuration::NamedHttpFilterConfigFactory);
 

@@ -7,7 +7,6 @@
 
 #include "extensions/filters/http/common/pass_through_filter.h"
 
-#include "filters/http/well_known_names.h"
 #include <string>
 
 namespace Envoy {
@@ -64,6 +63,10 @@ public:
 
   Http::FilterHeadersStatus encodeHeaders(Http::ResponseHeaderMap&, bool) override;
   Http::FilterDataStatus encodeData(Buffer::Instance&, bool) override;
+
+  static const std::string& name() {
+    CONSTRUCT_ON_FIRST_USE(std::string, "proxy.filters.http.staticdowngrade");
+  }
 
 private:
   Http::HeaderMap* rqx_headers_{nullptr};

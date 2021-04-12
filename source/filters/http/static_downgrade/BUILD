@@ -18,7 +18,6 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         "//api/proxy/filters/http/static_downgrade/v2:pkg_cc_proto",
-        "//source/filters/http:well_known_names",
         "@envoy//source/exe:envoy_common_lib",
     ],
 )

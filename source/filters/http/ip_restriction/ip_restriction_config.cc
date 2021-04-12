@@ -36,7 +36,7 @@ HttpIpRestrictionFilterConfig::createRouteSpecificFilterConfig(
   return std::make_shared<BlackOrWhiteListConfig>(typed_config);
 }
 
-std::string HttpIpRestrictionFilterConfig::name() const { return HttpFilterNames::get().IpRestriction; }
+std::string HttpIpRestrictionFilterConfig::name() const { return HttpIpRestrictionFilter::name(); }
 
 REGISTER_FACTORY(HttpIpRestrictionFilterConfig,
                  Server::Configuration::NamedHttpFilterConfigFactory);

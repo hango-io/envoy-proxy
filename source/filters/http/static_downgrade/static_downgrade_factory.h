@@ -26,7 +26,7 @@ public:
                                   Server::Configuration::ServerFactoryContext& context,
                                   ProtobufMessage::ValidationVisitor&) override;
 
-  std::string name() const override { return HttpFilterNames::get().StaticDowngrade; }
+  std::string name() const override { return HttpStaticDowngradeFilter::name(); }
 };
 
 } // namespace StaticDowngrade

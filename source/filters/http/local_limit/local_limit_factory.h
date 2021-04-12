@@ -4,7 +4,6 @@
 
 #include "extensions/filters/http/common/factory_base.h"
 #include "filters/http/local_limit/local_limit_filter.h"
-#include "filters/http/well_known_names.h"
 
 namespace Envoy {
 namespace Proxy {
@@ -26,7 +25,7 @@ public:
                                   Server::Configuration::ServerFactoryContext&,
                                   ProtobufMessage::ValidationVisitor&) override;
 
-  std::string name() const override { return HttpFilterNames::get().LocalLimit; }
+  std::string name() const override { return HttpLocalLimitFilter::name(); }
 };
 
 } // namespace LocalLimit
