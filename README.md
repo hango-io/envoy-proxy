@@ -24,3 +24,9 @@ Execute the following command to build the container image:
 ```shell
 ./ci/do_ci.sh envoy-release
 ```
+
+## Thanks
+
+- [Envoy Proxy](https://github.com/envoyproxy/envoy): The entire repo is built on the basis of Envoy, not only includes the Envoy main body, but also includes a large number of tool scripts derived from Envoy.
+
+- [Istio](https://github.com/istio/istio): The data plane uses the Pilot-agent module in Istio to manage the Envoy life cycle in the container.

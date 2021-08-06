@@ -25,3 +25,9 @@ git submodule update
 ```shell
 ./ci/do_ci.sh envoy-release
 ```
+
+## 致谢
+
+- [Envoy Proxy](https://github.com/envoyproxy/envoy)：整个工程都构建在 Envoy 基础之上，不单单包括 Proxy 主体，同时也包括大量的工具脚本也源于 Envoy。
+
+- [Istio](https://github.com/istio/istio)：数据面使用 Istio 中 Pilot-agent 模块来管理容器中 Envoy 生命周期。
