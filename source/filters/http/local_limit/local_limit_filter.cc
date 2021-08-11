@@ -10,13 +10,13 @@ namespace LocalLimit {
 
 bool RateLimitEntry::limit(const Http::HeaderMap& headers) const {
   if (!Http::HeaderUtility::matchHeaders(headers, enable_rqx_)) {
-    // 条件不匹配，当前 Entry 不对该请求进行限制。
+    // When the conditions do not match,the current entry does not restrict the request
     return false;
   }
 
   uint64_t token = token_bucket_ptr_->consume(1, false);
 
-  // 如果无法消费足够 token，则说明需要进行限流
+  // If cannot consume enough tokens,it means that need to limit current
   return token < 1;
 }
 

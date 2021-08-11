@@ -61,8 +61,8 @@ public:
 private:
   bool isBlackList_;
   std::unordered_set<uint32_t> rawIpV4;
-  // absl:uint128无法存放进入unordered_set，目前使用字符串处理v6 ip
-  // 有待优化
+  // absl::uint128 cannot be placed in unordered_set,so currently use string processing ipv6
+  // To be optimized
   std::unordered_set<std::string> rawIpV6;
 
   std::vector<Network::Address::CidrRange> cidrIpV4_;

@@ -21,10 +21,10 @@ git submodule update
 ```
 
 执行以下命令构建容器镜像：
-一、设置容器名称：
+1.设置容器名称：
   修改 /ci/do_ci.sh 中```ENVOY_PROXY_IMAGE_REPO=${ENVOY_PROXY_HUB:-}```
   例如 如果指定容器名为test，则修改为``` ENVOY_PROXY_IMAGE_REPO=${ENVOY_PROXY_HUB:-“test”}```
-二、生成容器镜像
+2.生成容器镜像
 ```shell
   ./ci/do_ci.sh envoy-release
 ```

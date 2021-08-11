@@ -49,7 +49,7 @@ void MetadataHubCommonConfig::handleEncodeHeaders(Http::LowerCaseString&& name,
 #undef CHECK_INLINE_HEADER
 
 MetadataHubCommonConfig::MetadataHubCommonConfig(const ProtoCommonConfig& config) {
-  // 向前兼容 set_to_metadata 字段一个版本
+  // Forward compatible with a version of set_to_metadata field
   ProtoCommonConfig mutable_config(config);
   mutable_config.mutable_decode_headers_to_state()->MergeFrom(config.set_to_metadata());
 
@@ -117,11 +117,11 @@ Http::FilterHeadersStatus HttpMetadataHubFilter::decodeHeaders(Http::RequestHead
                    StreamInfo::FilterState::StateType::ReadOnly);
   }
 
-  // 未指定 route metadata 名称空间，故直接返回
+  // No route metadata namespace is specified,so return directly
   if (config_->routeMatadataToState().empty()) {
     return Http::FilterHeadersStatus::Continue;
   }
-  // 如果路由不存在，则直接返回
+  // if the route does not exist,return directly
   auto route = decoder_callbacks_->route();
   if (!route.get()) {
     return Http::FilterHeadersStatus::Continue;
@@ -131,8 +131,10 @@ Http::FilterHeadersStatus HttpMetadataHubFilter::decodeHeaders(Http::RequestHead
     return Http::FilterHeadersStatus::Continue;
   }
 
-  // 已指定 route metadata 名称空间，且路由存在，则将对应 metadata 插入 filter state
-  // 必须在 decode 阶段完成该工作，避免 DC 等无 encode 阶段的请求无法获取相关 metadata
+  // The route metadata namespace has been specified and the route exists,then the correspoding
+  // metadata will be inserted into the filter state
+  // It must be completed in the decode stage to avoid the inability to abtain the relevant metadata
+  // in the non-encode stage such as DC
   for (const auto& metadata_namespace : config_->routeMatadataToState()) {
     ENVOY_LOG(debug, "Set route metadata in {} to filter state.", metadata_namespace);
     metadataToState(route_entry->typedMetadata(), state, metadata_namespace,

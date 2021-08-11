@@ -128,7 +128,8 @@ Http::FilterHeadersStatus HttpStaticDowngradeFilter::encodeHeaders(Http::Respons
     return Http::FilterHeadersStatus::Continue;
   }
 
-  // encode插件不应该刷新路由，所以可以直接保留route_config，留待encodeData使用
+  // encode plugin should not refresh the route,so can keep route_config directly and wait for
+  // decodedata to use
   auto route_config =
       Http::Utility::resolveMostSpecificPerFilterConfig<StaticDowngradeRouteConfig>(name(), route);
   // no config
