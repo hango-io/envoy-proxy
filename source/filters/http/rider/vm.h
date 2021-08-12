@@ -32,7 +32,7 @@ class LuaVirtualMachine : public std::enable_shared_from_this<LuaVirtualMachine>
 public:
   LuaVirtualMachine() = default;
   LuaVirtualMachine(const std::string& vm_id, const std::string& package_path);
-  virtual ~LuaVirtualMachine() {};
+  virtual ~LuaVirtualMachine(){};
 
   virtual std::string vm_id() const { return vm_id_; }
 
@@ -72,9 +72,7 @@ public:
   enum class Status { NotStarted, Yielded, Finished };
 
   Coroutine(lua_State* state, lua_State* parent_state);
-  ~Coroutine() {
-    ENVOY_LOG(trace, "coroutine destruction");
-  }
+  ~Coroutine() { ENVOY_LOG(trace, "coroutine destruction"); }
 
   void initialize(ContextBase* context, StreamDirection direction);
 

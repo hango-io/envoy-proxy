@@ -7,7 +7,7 @@ set -e
 ISTIO_REPOSITORY_URL=${ISTIO_REPOSITORY_URL:-"git@github.com:istio/istio.git"}
 ISTIO_REPOSITORY_COM=${ISTIO_REPOSITORY_COM:-"2dd7b6207f02cec8b42f4263ac197434f4ec9b4a"}
 
-ENVOY_PROXY_IMAGE_REPO=${ENVOY_PROXY_HUB:-}
+ENVOY_PROXY_IMAGE_REPO=${ENVOY_PROXY_HUB:-"cicd"}
 
 VERSION=$(git describe --tags --always --dirty)
 

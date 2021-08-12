@@ -1,7 +1,8 @@
 #! /bin/bash
 
 # Run docker build image and can use this docker as work space to develop, test, and build new Envoy.
-ENVOY_DOCKER_IMAGE="envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04"
+docker build -f ./ci/build.Dockerfile -t envoy/envoy-build-ubuntu:v1 .
+ENVOY_DOCKER_IMAGE="envoy/envoy-build-ubuntu:v1"
 
 # If the host OS does not provide dpkg command then please edit this script and set ARCH by youself.
 # ENVOY_ARCH="arm64"
