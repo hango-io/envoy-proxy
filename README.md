@@ -21,18 +21,13 @@ Execute the following command to build the local binary:
 
 Execute the following command to build the container image:
 
-1.Set container name:
-Modify the ```ENVOY_PROXY_IMAGE_REPO=${ENVOY_PROXY_HUB:-}``` in the /ci/do_ci.sh file
-For example,set the container name to "test",modify to ``` ENVOY_PROXY_IMAGE_REPO=${ENVOY_PROXY_HUB:-“test”}```
-2.build container image:
 ```shell
+# Export `ENVOY_PROXY_HUB` ENV to specify image repo.
+export ENVOY_PROXY_HUB="hangoio/envoy-proxy"
+# Build container image.
 ./ci/do_ci.sh envoy-release
 ```
 
-Run the envoy
-```shell
-./ci/docker_runner.sh
-```
 ## Thanks
 
 - [Envoy Proxy](https://github.com/envoyproxy/envoy): The entire repo is built on the basis of Envoy, not only includes the Envoy main body, but also includes a large number of tool scripts derived from Envoy.

@@ -21,18 +21,14 @@ git submodule update
 ```
 
 执行以下命令构建容器镜像：
-1.设置容器名称：
-  修改 /ci/do_ci.sh 中```ENVOY_PROXY_IMAGE_REPO=${ENVOY_PROXY_HUB:-}```
-  例如 如果指定容器名为test，则修改为``` ENVOY_PROXY_IMAGE_REPO=${ENVOY_PROXY_HUB:-“test”}```
-2.生成容器镜像
-```shell
-  ./ci/do_ci.sh envoy-release
-```
-运行 envoy
 
 ```shell
-./ci/docker_runner.sh
+# Export `ENVOY_PROXY_HUB` ENV to specify image repo.
+export ENVOY_PROXY_HUB="hangoio/envoy-proxy"
+# Build container image.
+./ci/do_ci.sh envoy-release
 ```
+
 ## 致谢
 
 - [Envoy Proxy](https://github.com/envoyproxy/envoy)：整个工程都构建在 Envoy 基础之上，不单单包括 Proxy 主体，同时也包括大量的工具脚本也源于 Envoy。
