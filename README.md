@@ -26,6 +26,9 @@ Modify the ```ENVOY_PROXY_IMAGE_REPO=${ENVOY_PROXY_HUB:-}``` in the /ci/do_ci.sh
 For example,set the container name to "test",modify to ``` ENVOY_PROXY_IMAGE_REPO=${ENVOY_PROXY_HUB:-“test”}```
 2.build container image:
 ```shell
+# Export `ENVOY_PROXY_HUB` ENV to specify image repo.
+export ENVOY_PROXY_HUB="hangoio/envoy-proxy"
+# Build container image.
 ./ci/do_ci.sh envoy-release
 ```
 

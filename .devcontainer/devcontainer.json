@@ -11,7 +11,7 @@
     "--volume=envoy-build:/build",
     "--volume=/var/run/docker.sock:/var/run/docker.sock",
     "--volume=/opt/envoy-cache:/opt/envoy-cache",
-    "${env:ADDITIONAL_VOLUME}",
+    //"${env:ADDITIONAL_VOLUME}",
     // Uncomment next line if you have devcontainer.env
     // "--env-file=.devcontainer/devcontainer.env"
   ],

@@ -26,7 +26,10 @@ git submodule update
   例如 如果指定容器名为test，则修改为``` ENVOY_PROXY_IMAGE_REPO=${ENVOY_PROXY_HUB:-“test”}```
 2.生成容器镜像
 ```shell
-  ./ci/do_ci.sh envoy-release
+# Export `ENVOY_PROXY_HUB` ENV to specify image repo.
+export ENVOY_PROXY_HUB="hangoio/envoy-proxy"
+# Build container image.
+./ci/do_ci.sh envoy-release
 ```
 运行 envoy
 
