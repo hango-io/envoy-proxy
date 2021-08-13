@@ -2,7 +2,11 @@
 
 import %workspace%/envoy/.bazelrc
 
+# For Lua Rider.
+build --define exported_symbols=enabled
+
 build --cxxopt -Wno-error=old-style-cast
+build --define exported_symbols=enabled # For Lua Rider
 build:clang --cxxopt -Wno-error=old-style-cast
 build:clang --cxxopt -Wno-error=unused-private-field
 build:clang --copt "-D USE_VECTOR_MOCK_MAP"
