@@ -9,20 +9,27 @@
     "--security-opt=seccomp=unconfined",
     "--volume=${env:HOME}:${env:HOME}",
     "--volume=envoy-build:/build",
-    "--volume=/var/run/docker.sock:/var/run/docker.sock",
     "--volume=/opt/envoy-cache:/opt/envoy-cache",
     "${env:ADDITIONAL_VOLUME}",
     // Uncomment next line if you have devcontainer.env
     // "--env-file=.devcontainer/devcontainer.env"
   ],
+  "containerEnv": {
+    "ENVOY_SRCDIR": "${containerWorkspaceFolder}",
+  },
   "settings": {
     "terminal.integrated.shell.linux": "/bin/bash",
     "bazel.buildifierFixOnFormat": true,
+    "clangd.path": "/opt/llvm/bin/clangd",
     "python.pythonPath": "/usr/bin/python3",
     "python.formatting.provider": "yapf",
     "python.formatting.yapfArgs": [
       "--style=${workspaceFolder}/tools/code_format/.style.yapf"
     ],
+    "files.exclude": {
+      "**/.clangd/**": true,
+      "**/bazel-*/**": true
+    },
     "files.watcherExclude": {
       "**/.clangd/**": true,
       "**/bazel-*/**": true
@@ -35,8 +42,9 @@
     "github.vscode-pull-request-github",
     "zxh404.vscode-proto3",
     "bazelbuild.vscode-bazel",
+    "llvm-vs-code-extensions.vscode-clangd",
+    "vadimcn.vscode-lldb",
     "webfreak.debug",
-    "ms-python.python",
-    "ms-vscode.cpptools"
+    "ms-python.python"
   ]
 }
