@@ -31,10 +31,6 @@ if __name__ == "__main__":
     exts = get_filters_extensions(exts)
     work_path = os.getcwd()
 
-    if(not work_path.endswith("envoy-proxy")):
-        print("Error: error work home. Please run script under envoy-proxy")
-        exit()
-
     file_path = os.path.join(work_path, "source/extensions.bzl")
 
     update_extensions_conf(exts, file_path)
