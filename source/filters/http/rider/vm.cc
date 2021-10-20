@@ -116,6 +116,16 @@ PluginHandleSharedPtr LuaThread::startPlugin(PluginSharedPtr plugin) {
   LuaStackUnchange stackUnchange(0, state);
 
   // TODO(Tong Cai): refactor.
+
+  lua_getfield(state, -1, "version");
+  size_t version_size;
+  const char* raw_version = luaL_optlstring(state, -1, nullptr, &version_size);
+  if (raw_version != nullptr) {
+    std::string version(raw_version, version_size);
+    plugin_handle->version() = version;
+  }
+  lua_pop(state, 1);
+
   lua_getfield(state, -1, "on_configure");
   if (lua_isfunction(state, -1)) {
     plugin_handle->onConfigureRef() = luaL_ref(state, LUA_REGISTRYINDEX);
@@ -126,24 +136,66 @@ PluginHandleSharedPtr LuaThread::startPlugin(PluginSharedPtr plugin) {
     lua_pop(state, 1);
   }
 
-  lua_getfield(state, -1, "on_request");
-  if (lua_isfunction(state, -1)) {
-    plugin_handle->onRequestRef() = luaL_ref(state, LUA_REGISTRYINDEX);
-  } else if (lua_isnil(state, -1)) {
-    plugin_handle->onRequestRef() = LUA_NOREF;
-    lua_pop(state, 1);
-  } else {
-    lua_pop(state, 1);
-  }
+  if (raw_version != nullptr) {
+    lua_getfield(state, -1, "on_request_header");
+    if (lua_isfunction(state, -1)) {
+      plugin_handle->onRequestHeaderRef() = luaL_ref(state, LUA_REGISTRYINDEX);
+    } else if (lua_isnil(state, -1)) {
+      plugin_handle->onRequestHeaderRef() = LUA_NOREF;
+      lua_pop(state, 1);
+    } else {
+      lua_pop(state, 1);
+    }
 
-  lua_getfield(state, -1, "on_response");
-  if (lua_isfunction(state, -1)) {
-    plugin_handle->onResponseRef() = luaL_ref(state, LUA_REGISTRYINDEX);
-  } else if (lua_isnil(state, -1)) {
-    plugin_handle->onResponseRef() = LUA_NOREF;
-    lua_pop(state, 1);
+    lua_getfield(state, -1, "on_request_body");
+    if (lua_isfunction(state, -1)) {
+      plugin_handle->onRequestBodyRef() = luaL_ref(state, LUA_REGISTRYINDEX);
+    } else if (lua_isnil(state, -1)) {
+      plugin_handle->onRequestBodyRef() = LUA_NOREF;
+      lua_pop(state, 1);
+    } else {
+      lua_pop(state, 1);
+    }
+
+    lua_getfield(state, -1, "on_response_header");
+    if (lua_isfunction(state, -1)) {
+      plugin_handle->onResponseHeaderRef() = luaL_ref(state, LUA_REGISTRYINDEX);
+    } else if (lua_isnil(state, -1)) {
+      plugin_handle->onResponseHeaderRef() = LUA_NOREF;
+      lua_pop(state, 1);
+    } else {
+      lua_pop(state, 1);
+    }
+
+    lua_getfield(state, -1, "on_response_body");
+    if (lua_isfunction(state, -1)) {
+      plugin_handle->onResponseBodyRef() = luaL_ref(state, LUA_REGISTRYINDEX);
+    } else if (lua_isnil(state, -1)) {
+      plugin_handle->onResponseBodyRef() = LUA_NOREF;
+      lua_pop(state, 1);
+    } else {
+      lua_pop(state, 1);
+    }
   } else {
-    lua_pop(state, 1);
+    lua_getfield(state, -1, "on_request");
+    if (lua_isfunction(state, -1)) {
+      plugin_handle->onRequestRef() = luaL_ref(state, LUA_REGISTRYINDEX);
+    } else if (lua_isnil(state, -1)) {
+      plugin_handle->onRequestRef() = LUA_NOREF;
+      lua_pop(state, 1);
+    } else {
+      lua_pop(state, 1);
+    }
+
+    lua_getfield(state, -1, "on_response");
+    if (lua_isfunction(state, -1)) {
+      plugin_handle->onResponseRef() = luaL_ref(state, LUA_REGISTRYINDEX);
+    } else if (lua_isnil(state, -1)) {
+      plugin_handle->onResponseRef() = LUA_NOREF;
+      lua_pop(state, 1);
+    } else {
+      lua_pop(state, 1);
+    }
   }
 
   lua_pop(state, 1);

@@ -2,6 +2,7 @@
 
 #include "filters/http/rider/common.h"
 #include "filters/http/rider/context.h"
+#include "filters/http/rider/filter.h"
 
 namespace Envoy {
 namespace Proxy {
@@ -121,6 +122,11 @@ int FFI_FUNC(get_metadata)(ContextBase* context, envoy_lua_ffi_str_t* filter_nam
                            envoy_lua_ffi_str_t* key, envoy_lua_ffi_str_t* value) {
   ASSERT(context);
   return context->getMetadataValue(filter_name, key, value);
+}
+
+/* Body Interface */
+int FFI_FUNC(get_body)(LuaStreamOpSourceType source, envoy_lua_ffi_str_t* body) {
+  return global_ctx->getBody(source, body);
 }
 
 #undef FFI_FUNC

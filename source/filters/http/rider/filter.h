@@ -18,6 +18,8 @@ namespace Proxy {
 namespace HttpFilters {
 namespace Rider {
 
+extern thread_local ContextBase* global_ctx;
+
 using FilterConfigProto = proxy::filters::http::rider::v3alpha1::FilterConfig;
 using RouteConfigProto = proxy::filters::http::rider::v3alpha1::RouteFilterConfig;
 
@@ -146,8 +148,11 @@ public:
   StreamWrapper(Coroutine& coroutine, Filter& filter, FilterCallbacks& callbacks, bool end_stream);
 
   Http::FilterHeadersStatus start(int function_ref);
+  Http::FilterHeadersStatus start(int function_ref, int function_ref_body);
+  void startBody(int function_ref);
 
   Http::FilterDataStatus onData(Buffer::Instance& data, bool end_stream);
+  Http::FilterDataStatus onData(int function_ref, Buffer::Instance& data, bool end_stream);
 
   // Http::AsyncClient::Callbacks
   void onSuccess(const Http::AsyncClient::Request&, Http::ResponseMessagePtr&&) override;
@@ -178,6 +183,8 @@ private:
   bool buffered_body_{};
   bool end_stream_{};
   bool headers_continued_{};
+  bool start_body_{false};
+  int function_ref_body_{LUA_NOREF};
 };
 
 using StreamWrapperPtr = std::unique_ptr<StreamWrapper>;
@@ -185,7 +192,9 @@ using StreamWrapperPtr = std::unique_ptr<StreamWrapper>;
 class Filter : public ContextBase, public Http::StreamFilter {
 public:
   Filter(Config& config)
-      : ContextBase(this, config.pluginHandle().vm(), config.plugin()), config_(config) {}
+      : ContextBase(this, config.pluginHandle().vm(), config.plugin()), config_(config) {
+    global_ctx = dynamic_cast<ContextBase*>(this);
+  }
 
   virtual ~Filter() = default;
 
@@ -276,14 +285,21 @@ public:
   int getMetadataValue(envoy_lua_ffi_str_t* filter_name, envoy_lua_ffi_str_t* key,
                        envoy_lua_ffi_str_t* value) override;
 
+  // BodyInterface
+  int getBody(LuaStreamOpSourceType type, envoy_lua_ffi_str_t* body) override;
+
+  bool responded{false};
+
 private:
   Http::FilterHeadersStatus doHeaders(StreamWrapperPtr& stream_wrapper, StreamDirection direction,
                                       LuaVirtualMachine& vm, CoroutinePtr& coroutine,
                                       FilterCallbacks& callbacks, int function_ref,
-                                      Http::HeaderMap&, bool end_stream);
+                                      int function_ref_body, Http::HeaderMap&, bool end_stream);
 
   Http::FilterDataStatus doData(StreamWrapper& stream_wrapper, Buffer::Instance& data,
                                 bool end_stream);
+  Http::FilterDataStatus doData(StreamWrapper& stream_wrapper, int function_ref,
+                                Buffer::Instance& data, bool end_stream);
 
   struct DecoderCallbacks : public FilterCallbacks {
     DecoderCallbacks(Filter& parent) : parent_(parent) {}
@@ -333,6 +349,7 @@ private:
   CoroutinePtr response_coroutine_;
   std::string error_message_;
   std::string temporary_string_;
+  std::string tmp_body_;
   Envoy::Http::Utility::QueryParams temporary_query_params_;
   int shared_table_reference_{};
   bool destroyed_{};
