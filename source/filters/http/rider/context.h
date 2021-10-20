@@ -72,6 +72,13 @@ public:
   int& onRequestRef() { return on_request_ref_; }
   int& onResponseRef() { return on_response_ref_; }
 
+  int& onRequestHeaderRef() { return on_request_header_ref_; }
+  int& onRequestBodyRef() { return on_request_body_ref_; }
+  int& onResponseHeaderRef() { return on_response_header_ref_; }
+  int& onResponseBodyRef() { return on_response_body_ref_; }
+
+  std::string& version() { return version_; }
+
 private:
   std::shared_ptr<LuaVirtualMachine> vm_;
   std::shared_ptr<Plugin> plugin_;
@@ -79,6 +86,12 @@ private:
   int on_configure_ref_{LUA_NOREF};
   int on_request_ref_{LUA_NOREF};
   int on_response_ref_{LUA_NOREF};
+
+  int on_request_header_ref_{LUA_NOREF};
+  int on_request_body_ref_{LUA_NOREF};
+  int on_response_header_ref_{LUA_NOREF};
+  int on_response_body_ref_{LUA_NOREF};
+  std::string version_;
 };
 
 using PluginHandleSharedPtr = std::shared_ptr<PluginHandle>;
@@ -94,6 +107,7 @@ class ContextBase : public RootInterface,
                     public StreamInfoInterface,
                     public HeaderInterface,
                     public FilterMetadataInterface,
+                    public BodyInterface,
                     public Logger::Loggable<Logger::Id::lua> {
 public:
   ContextBase() {}
@@ -193,6 +207,13 @@ public:
     UNREFERENCED_PARAMETER(filter_name);
     UNREFERENCED_PARAMETER(key);
     UNREFERENCED_PARAMETER(value);
+    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+  }
+
+  // BodyInterface
+  int getBody(LuaStreamOpSourceType type, envoy_lua_ffi_str_t* body) override {
+    UNREFERENCED_PARAMETER(type);
+    UNREFERENCED_PARAMETER(body);
     NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
   }
 

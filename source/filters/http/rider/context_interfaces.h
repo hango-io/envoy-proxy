@@ -124,6 +124,12 @@ public:
                                envoy_lua_ffi_str_t* value) PURE;
 };
 
+class BodyInterface {
+public:
+  virtual ~BodyInterface() = default;
+  virtual int getBody(LuaStreamOpSourceType type, envoy_lua_ffi_str_t* body) PURE;
+};
+
 } // namespace Rider
 } // namespace HttpFilters
 } // namespace Proxy
