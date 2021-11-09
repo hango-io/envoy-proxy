@@ -22,7 +22,7 @@ namespace Proxy {
 namespace HttpFilters {
 namespace Rider {
 
-thread_local ContextBase* global_ctx;
+thread_local ContextBase* global_ctx = nullptr;
 
 ConfigImpl::ConfigImpl(const FilterConfigProto& proto_config,
                        Upstream::ClusterManager& cluster_manager,
@@ -254,6 +254,7 @@ Http::FilterDataStatus Filter::decodeData(Buffer::Instance& data, bool end_strea
 }
 
 Http::FilterDataStatus Filter::encodeData(Buffer::Instance& data, bool end_stream) {
+  global_ctx = dynamic_cast<ContextBase*>(this);
   if (config_.pluginHandle().version().empty()) {
     if (error_ || !response_stream_wrapper_.get()) {
       return Http::FilterDataStatus::Continue;
