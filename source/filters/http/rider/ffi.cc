@@ -126,6 +126,7 @@ int FFI_FUNC(get_metadata)(ContextBase* context, envoy_lua_ffi_str_t* filter_nam
 
 /* Body Interface */
 int FFI_FUNC(get_body)(LuaStreamOpSourceType source, envoy_lua_ffi_str_t* body) {
+  ASSERT(global_ctx);
   return global_ctx->getBody(source, body);
 }
 
