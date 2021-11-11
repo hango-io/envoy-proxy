@@ -197,6 +197,10 @@ Http::FilterHeadersStatus Filter::doHeaders(StreamWrapperPtr& stream_wrapper,
                                             CoroutinePtr& coroutine, FilterCallbacks& callbacks,
                                             int function_ref, int function_ref_body,
                                             Http::HeaderMap&, bool end_stream) {
+  if (!config_.pluginHandle().version().empty() && responded && function_ref == LUA_NOREF) {
+    responded = false;
+    return Http::FilterHeadersStatus::StopIteration;
+  }
   if (error_ || function_ref == LUA_NOREF) {
     ENVOY_LOG(debug, "skip do headers");
     return Http::FilterHeadersStatus::Continue;
@@ -254,7 +258,6 @@ Http::FilterDataStatus Filter::decodeData(Buffer::Instance& data, bool end_strea
 }
 
 Http::FilterDataStatus Filter::encodeData(Buffer::Instance& data, bool end_stream) {
-  global_ctx = dynamic_cast<ContextBase*>(this);
   if (config_.pluginHandle().version().empty()) {
     if (error_ || !response_stream_wrapper_.get()) {
       return Http::FilterDataStatus::Continue;
@@ -715,6 +718,7 @@ Http::FilterHeadersStatus StreamWrapper::start(int function_ref) {
 
 Http::FilterHeadersStatus StreamWrapper::start(int function_ref, int function_ref_body) {
   // We are on the top of the stack.
+  global_ctx = dynamic_cast<ContextBase*>(&filter_);
   coroutine_.start(function_ref, yield_callback_);
   Http::FilterHeadersStatus status;
 
@@ -755,6 +759,7 @@ Http::FilterHeadersStatus StreamWrapper::start(int function_ref, int function_re
 
 void StreamWrapper::startBody(int function_ref) {
   // We are on the top of the stack.
+  global_ctx = dynamic_cast<ContextBase*>(&filter_);
   coroutine_.start(function_ref, yield_callback_);
 }
 
@@ -976,6 +981,7 @@ void StreamWrapper::onSuccess(const Http::AsyncClient::Request&,
     state_ = State::Running;
 
     try {
+      global_ctx = dynamic_cast<ContextBase*>(&filter_);
       coroutine_.resume(2, yield_callback_);
     } catch (const LuaException& e) {
       filter_.scriptError(e);
