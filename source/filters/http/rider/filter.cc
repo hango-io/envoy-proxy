@@ -724,14 +724,14 @@ Http::FilterHeadersStatus StreamWrapper::start(int function_ref, int function_re
 
   if (state_ == State::HttpCall) {
     status = Http::FilterHeadersStatus::StopAllIterationAndBuffer;
+    if (end_stream_ && function_ref_body != LUA_NOREF) {
+      start_body_ = true;
+      function_ref_body_ = function_ref_body;
+    }
+  } else if (state_ == State::Responded) {
+    status = Http::FilterHeadersStatus::StopIteration;
   } else {
     status = Http::FilterHeadersStatus::StopIteration;
-    if (state_ == State::Responded) {
-      return status;
-    }
-  }
-
-  if (status == Http::FilterHeadersStatus::StopIteration) {
     if (end_stream_) {
       if (function_ref_body == LUA_NOREF) {
         status = Http::FilterHeadersStatus::Continue;
@@ -743,14 +743,9 @@ Http::FilterHeadersStatus StreamWrapper::start(int function_ref, int function_re
           filter_.scriptError(e);
         }
         status = (state_ == State::HttpCall || state_ == State::Responded)
-                     ? Http::FilterHeadersStatus::StopAllIterationAndBuffer
+                     ? Http::FilterHeadersStatus::StopIteration
                      : Http::FilterHeadersStatus::Continue;
       }
-    }
-  } else {
-    if (end_stream_ && function_ref_body != LUA_NOREF) {
-      start_body_ = true;
-      function_ref_body_ = function_ref_body;
     }
   }
 
@@ -801,10 +796,7 @@ Http::FilterDataStatus StreamWrapper::onData(Buffer::Instance& data, bool end_st
 
 Http::FilterDataStatus StreamWrapper::onData(int function_ref, Buffer::Instance& data,
                                              bool end_stream) {
-  /*  if (filter_.responded) {
-      filter_.responded = false;
-      return Http::FilterDataStatus::Continue;
-    }*/
+
   //  ASSERT(!end_stream_);
   end_stream_ = end_stream;
   saw_body_ = true;
