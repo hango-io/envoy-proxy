@@ -44,7 +44,7 @@ static_resources:
                   package_path: "/home/starrynight/workspace/rider/?/init.lua;/home/starrynight/workspace/rider/?.lua;"
                 code:
                   local:
-                    filename: /home/starrynight/workspace/rider/plugins/test/perf_test_v2.lua
+                    filename: /home/starrynight/workspace/rider/plugins/test/get_body_v2.lua
                 name: get_body_v2
 
           - name: envoy.router
@@ -62,7 +62,7 @@ static_resources:
         - endpoint:
             address:
               socket_address:
-                address: 172.17.0.5
+                address: httpbin.org
                 port_value: 80
 
 admin:
