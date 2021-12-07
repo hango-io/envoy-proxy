@@ -183,6 +183,11 @@ public:
     UNREFERENCED_PARAMETER(value);
     NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
   }
+  int setHeaderMap(LuaStreamOpSourceType type, envoy_lua_ffi_string_pairs* buf) override {
+    UNREFERENCED_PARAMETER(type);
+    UNREFERENCED_PARAMETER(buf);
+    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+  }
   int setHeaderMapValue(LuaStreamOpSourceType type, absl::string_view key,
                         absl::string_view value) override {
     UNREFERENCED_PARAMETER(type);

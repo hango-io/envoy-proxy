@@ -275,6 +275,7 @@ public:
   int getHeaderMap(LuaStreamOpSourceType type, envoy_lua_ffi_string_pairs* buf) override;
   int getHeaderMapValue(LuaStreamOpSourceType type, absl::string_view key,
                         envoy_lua_ffi_str_t* value) override;
+  int setHeaderMap(LuaStreamOpSourceType type, envoy_lua_ffi_string_pairs* buf) override;
   int setHeaderMapValue(LuaStreamOpSourceType type, absl::string_view key,
                         absl::string_view value) override;
   int removeHeaderMapValue(LuaStreamOpSourceType type, absl::string_view key) override;
