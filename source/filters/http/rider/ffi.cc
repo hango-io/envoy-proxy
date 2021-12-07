@@ -185,6 +185,13 @@ int FFI_FUNC_V2(get_header_map_value)(LuaStreamOpSourceType source, const char* 
   return rc;
 }
 
+int FFI_FUNC_V2(set_header_map)(LuaStreamOpSourceType source, envoy_lua_ffi_string_pairs* buffer) {
+  ASSERT(global_ctx);
+  int rc = global_ctx->setHeaderMap(source, buffer);
+  return rc;
+}
+
+
 int FFI_FUNC_V2(set_header_map_value)(LuaStreamOpSourceType source, const char* key, int key_len,
                                       const char* value, int value_len) {
   ASSERT(global_ctx);

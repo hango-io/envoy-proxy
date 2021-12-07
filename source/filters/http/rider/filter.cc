@@ -511,6 +511,28 @@ static int getHeaderMapValue(Http::HeaderMap* headers, absl::string_view key,
   return static_cast<int>(FFIReturnCode::Success);
 }
 
+static int setHeaderMap(Http::HeaderMap* headers, envoy_lua_ffi_string_pairs* buf) {
+  if (!(buf && buf->data && buf->capacity)) {
+    return static_cast<int>(FFIReturnCode::BadArgument);
+  }
+
+  std::vector<std::string> keys;
+  headers->iterate([&keys](const Http::HeaderEntry& header) -> Http::HeaderMap::Iterate {
+    keys.push_back(std::string(header.key().getStringView()));
+    return Http::HeaderMap::Iterate::Continue;
+  });
+  for (auto& k : keys) {
+    const Http::LowerCaseString lower_key{k};
+    headers->remove(lower_key);
+  }
+  for (int i = 0; i < buf->size; i++) {
+    absl::string_view key(buf->data[i].key.data, buf->data[i].key.len);
+    absl::string_view value(buf->data[i].value.data, buf->data[i].value.len);
+    headers->addCopy(Http::LowerCaseString(std::string(key)), value);
+  }
+  return static_cast<int>(FFIReturnCode::Success);
+}
+
 static int setHeaderMapValue(Http::HeaderMap* headers, absl::string_view key,
                              absl::string_view value) {
   if (!headers || key.empty() || value.empty()) {
@@ -596,6 +618,18 @@ int Filter::getHeaderMapValue(LuaStreamOpSourceType type, absl::string_view key,
 
   if (LuaStreamOpSourceType::Response == type) {
     return inner::getHeaderMapValue(response_headers_, key, value);
+  }
+
+  NOT_REACHED_GCOVR_EXCL_LINE;
+}
+
+int Filter::setHeaderMap(LuaStreamOpSourceType type, envoy_lua_ffi_string_pairs* buf) {
+  if (LuaStreamOpSourceType::Request == type) {
+    return inner::setHeaderMap(request_headers_, buf);
+  }
+
+  if (LuaStreamOpSourceType::Response == type) {
+    return inner::setHeaderMap(response_headers_, buf);
   }
 
   NOT_REACHED_GCOVR_EXCL_LINE;
