@@ -183,6 +183,19 @@ public:
     UNREFERENCED_PARAMETER(value);
     NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
   }
+  int getHeaderMapValueSize(LuaStreamOpSourceType type, absl::string_view key) override {
+    UNREFERENCED_PARAMETER(type);
+    UNREFERENCED_PARAMETER(key);
+    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+  }
+  int getHeaderMapValueIndex(LuaStreamOpSourceType type, absl::string_view key,
+                             envoy_lua_ffi_str_t* value, int index) override {
+    UNREFERENCED_PARAMETER(type);
+    UNREFERENCED_PARAMETER(key);
+    UNREFERENCED_PARAMETER(value);
+    UNREFERENCED_PARAMETER(index);
+    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+  }
   int setHeaderMap(LuaStreamOpSourceType type, envoy_lua_ffi_string_pairs* buf) override {
     UNREFERENCED_PARAMETER(type);
     UNREFERENCED_PARAMETER(buf);
