@@ -1,5 +1,6 @@
 #include "filters/http/rider/filter.h"
 
+#include <cstdint>
 #include <memory>
 
 #include "common/common/logger.h"
@@ -511,6 +512,32 @@ static int getHeaderMapValue(Http::HeaderMap* headers, absl::string_view key,
   return static_cast<int>(FFIReturnCode::Success);
 }
 
+static int getHeaderMapValueSize(Http::HeaderMap* headers, absl::string_view key) {
+  if (key.empty()) {
+    return static_cast<int>(FFIReturnCode::BadArgument);
+  }
+  const auto get_result =
+      headers->get(Http::LowerCaseString(std::string(key.data(), key.length())));
+  return get_result.size();
+}
+
+static int getHeaderMapValueIndex(Http::HeaderMap* headers, absl::string_view key,
+                                  envoy_lua_ffi_str_t* value, int index) {
+  if (!(headers && value) || key.empty()) {
+    return static_cast<int>(FFIReturnCode::BadArgument);
+  }
+
+  const auto get_result =
+      headers->get(Http::LowerCaseString(std::string(key.data(), key.length())));
+  if (get_result.empty() || index < 0 || static_cast<uint64_t>(index) >= get_result.size()) {
+    return static_cast<int>(FFIReturnCode::NotFound);
+  }
+
+  value->data = get_result[index]->value().getStringView().data();
+  value->len = get_result[index]->value().size();
+  return static_cast<int>(FFIReturnCode::Success);
+}
+
 static int setHeaderMap(Http::HeaderMap* headers, envoy_lua_ffi_string_pairs* buf) {
   if (!(buf && buf->data && buf->capacity)) {
     return static_cast<int>(FFIReturnCode::BadArgument);
@@ -618,6 +645,31 @@ int Filter::getHeaderMapValue(LuaStreamOpSourceType type, absl::string_view key,
 
   if (LuaStreamOpSourceType::Response == type) {
     return inner::getHeaderMapValue(response_headers_, key, value);
+  }
+
+  NOT_REACHED_GCOVR_EXCL_LINE;
+}
+
+int Filter::getHeaderMapValueSize(LuaStreamOpSourceType type, absl::string_view key) {
+  if (LuaStreamOpSourceType::Request == type) {
+    return inner::getHeaderMapValueSize(request_headers_, key);
+  }
+
+  if (LuaStreamOpSourceType::Response == type) {
+    return inner::getHeaderMapValueSize(response_headers_, key);
+  }
+
+  NOT_REACHED_GCOVR_EXCL_LINE;
+}
+
+int Filter::getHeaderMapValueIndex(LuaStreamOpSourceType type, absl::string_view key,
+                                   envoy_lua_ffi_str_t* value, int index) {
+  if (LuaStreamOpSourceType::Request == type) {
+    return inner::getHeaderMapValueIndex(request_headers_, key, value, index);
+  }
+
+  if (LuaStreamOpSourceType::Response == type) {
+    return inner::getHeaderMapValueIndex(response_headers_, key, value, index);
   }
 
   NOT_REACHED_GCOVR_EXCL_LINE;

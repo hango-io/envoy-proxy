@@ -185,12 +185,25 @@ int FFI_FUNC_V2(get_header_map_value)(LuaStreamOpSourceType source, const char* 
   return rc;
 }
 
+int FFI_FUNC_V2(get_header_map_value_size)(LuaStreamOpSourceType source, const char* key,
+                                           int key_len) {
+  ASSERT(global_ctx);
+  int rc = global_ctx->getHeaderMapValueSize(source, absl::string_view(key, key_len));
+  return rc;
+}
+
+int FFI_FUNC_V2(get_header_map_value_index)(LuaStreamOpSourceType source, const char* key, int key_len,
+                                      envoy_lua_ffi_str_t* value, int index) {
+  ASSERT(global_ctx);
+  int rc = global_ctx->getHeaderMapValueIndex(source, absl::string_view(key, key_len), value, index);
+  return rc;
+}
+
 int FFI_FUNC_V2(set_header_map)(LuaStreamOpSourceType source, envoy_lua_ffi_string_pairs* buffer) {
   ASSERT(global_ctx);
   int rc = global_ctx->setHeaderMap(source, buffer);
   return rc;
 }
-
 
 int FFI_FUNC_V2(set_header_map_value)(LuaStreamOpSourceType source, const char* key, int key_len,
                                       const char* value, int value_len) {

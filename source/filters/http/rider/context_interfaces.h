@@ -110,6 +110,9 @@ public:
   virtual int getHeaderMap(LuaStreamOpSourceType type, envoy_lua_ffi_string_pairs* buf) PURE;
   virtual int getHeaderMapValue(LuaStreamOpSourceType type, absl::string_view key,
                                 envoy_lua_ffi_str_t* value) PURE;
+  virtual int getHeaderMapValueSize(LuaStreamOpSourceType type, absl::string_view key) PURE;
+  virtual int getHeaderMapValueIndex(LuaStreamOpSourceType type, absl::string_view key,
+                                     envoy_lua_ffi_str_t* value, int index) PURE;
   virtual int setHeaderMap(LuaStreamOpSourceType type, envoy_lua_ffi_string_pairs* buf) PURE;
   virtual int setHeaderMapValue(LuaStreamOpSourceType type, absl::string_view key,
                                 absl::string_view value) PURE;
