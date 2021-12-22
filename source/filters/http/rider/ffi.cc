@@ -192,10 +192,11 @@ int FFI_FUNC_V2(get_header_map_value_size)(LuaStreamOpSourceType source, const c
   return rc;
 }
 
-int FFI_FUNC_V2(get_header_map_value_index)(LuaStreamOpSourceType source, const char* key, int key_len,
-                                      envoy_lua_ffi_str_t* value, int index) {
+int FFI_FUNC_V2(get_header_map_value_index)(LuaStreamOpSourceType source, const char* key,
+                                            int key_len, envoy_lua_ffi_str_t* value, int index) {
   ASSERT(global_ctx);
-  int rc = global_ctx->getHeaderMapValueIndex(source, absl::string_view(key, key_len), value, index);
+  int rc =
+      global_ctx->getHeaderMapValueIndex(source, absl::string_view(key, key_len), value, index);
   return rc;
 }
 
@@ -254,6 +255,12 @@ int FFI_FUNC_V2(get_metadata)(envoy_lua_ffi_str_t* filter_name, envoy_lua_ffi_st
                               envoy_lua_ffi_str_t* value) {
   ASSERT(global_ctx);
   return global_ctx->getMetadataValue(filter_name, key, value);
+}
+
+int FFI_FUNC_V2(get_dynamic_metadata_value)(envoy_lua_ffi_str_t* filter_name,
+                                            envoy_lua_ffi_str_t* key, envoy_lua_ffi_str_t* value) {
+  ASSERT(global_ctx);
+  return global_ctx->getDynamicMetadataValue(filter_name, key, value);
 }
 
 /* Body Interface */

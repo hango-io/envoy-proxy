@@ -126,6 +126,8 @@ public:
   virtual ~FilterMetadataInterface() = default;
   virtual int getMetadataValue(envoy_lua_ffi_str_t* filter_name, envoy_lua_ffi_str_t* key,
                                envoy_lua_ffi_str_t* value) PURE;
+  virtual int getDynamicMetadataValue(envoy_lua_ffi_str_t* filter_name, envoy_lua_ffi_str_t* key,
+                                      envoy_lua_ffi_str_t* value) PURE;
 };
 
 class BodyInterface {

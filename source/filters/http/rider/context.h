@@ -228,6 +228,14 @@ public:
     NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
   }
 
+  int getDynamicMetadataValue(envoy_lua_ffi_str_t* filter_name, envoy_lua_ffi_str_t* key,
+                              envoy_lua_ffi_str_t* value) override {
+    UNREFERENCED_PARAMETER(filter_name);
+    UNREFERENCED_PARAMETER(key);
+    UNREFERENCED_PARAMETER(value);
+    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+  }
+
   // BodyInterface
   int getBody(LuaStreamOpSourceType type, envoy_lua_ffi_str_t* body) override {
     UNREFERENCED_PARAMETER(type);

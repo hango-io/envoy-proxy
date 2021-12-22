@@ -753,6 +753,43 @@ int Filter::getMetadataValue(envoy_lua_ffi_str_t* filter_name, envoy_lua_ffi_str
   return static_cast<int>(FFIReturnCode::Success);
 }
 
+int Filter::getDynamicMetadataValue(envoy_lua_ffi_str_t* filter_name, envoy_lua_ffi_str_t* key,
+                             envoy_lua_ffi_str_t* value) {
+
+  const auto& metadatas = decoder_callbacks_.callbacks_->streamInfo().dynamicMetadata();
+  const auto& filter_it =
+      metadatas.filter_metadata().find(std::string(filter_name->data, filter_name->len));
+  if (filter_it == metadatas.filter_metadata().end()) {
+    return static_cast<int>(FFIReturnCode::NotFound);
+  }
+
+  auto metadata = filter_it->second;
+
+  const auto& it = metadata.fields().find(std::string(key->data, key->len));
+  if (it == metadata.fields().end()) {
+    return static_cast<int>(FFIReturnCode::NotFound);
+  }
+
+  // Only integer and string is supported for now.
+  // TODO(Tong Cai): support all types.
+  switch (it->second.kind_case()) {
+  case ProtobufWkt::Value::kNumberValue:
+    temporary_string_ = std::to_string(int64_t(it->second.number_value()));
+    value->data = temporary_string_.c_str();
+    value->len = temporary_string_.length();
+    break;
+  case ProtobufWkt::Value::kStringValue: {
+    temporary_string_ = it->second.string_value();
+    value->data = temporary_string_.c_str();
+    value->len = temporary_string_.length();
+    break;
+  }
+  default:
+    return static_cast<int>(FFIReturnCode::Unsupported);
+  }
+  return static_cast<int>(FFIReturnCode::Success);
+}
+
 int Filter::getBody(LuaStreamOpSourceType type, envoy_lua_ffi_str_t* body) {
   if (LuaStreamOpSourceType::Request == type) {
     if (decoder_callbacks_.bufferedBody() == nullptr) {
