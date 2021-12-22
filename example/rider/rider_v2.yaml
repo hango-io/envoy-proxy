@@ -33,7 +33,7 @@ static_resources:
                   proxy.filters.http.rider:
                     "@type": type.googleapis.com/proxy.filters.http.rider.v3alpha1.RouteFilterConfig
                     plugins:
-                      - name: get_body_v2
+                      - name: fun_test_v2
 
           http_filters:
           - name: proxy.filters.http.rider
@@ -44,8 +44,8 @@ static_resources:
                   package_path: "/home/starrynight/workspace/rider/?/init.lua;/home/starrynight/workspace/rider/?.lua;"
                 code:
                   local:
-                    filename: /home/starrynight/workspace/rider/plugins/test/get_body_v2.lua
-                name: get_body_v2
+                    filename: /home/starrynight/workspace/rider/plugins/test/fun_test_v2.lua
+                name: fun_test_v2
 
           - name: envoy.router
             typed_config: {}

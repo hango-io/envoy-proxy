@@ -289,6 +289,9 @@ public:
   int getMetadataValue(envoy_lua_ffi_str_t* filter_name, envoy_lua_ffi_str_t* key,
                        envoy_lua_ffi_str_t* value) override;
 
+  int getDynamicMetadataValue(envoy_lua_ffi_str_t* filter_name, envoy_lua_ffi_str_t* key,
+                              envoy_lua_ffi_str_t* value) override;
+
   // BodyInterface
   int getBody(LuaStreamOpSourceType type, envoy_lua_ffi_str_t* body) override;
 
