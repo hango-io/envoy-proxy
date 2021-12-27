@@ -41,10 +41,10 @@ static_resources:
               "@type": type.googleapis.com/proxy.filters.http.rider.v3alpha1.FilterConfig
               plugin:
                 vm_config:
-                  package_path: "/home/starrynight/workspace/rider/?/init.lua;/home/starrynight/workspace/rider/?.lua;"
+                  package_path: "/path/to/rider/?/init.lua;/path/to/rider/?.lua;"
                 code:
                   local:
-                    filename: /home/starrynight/workspace/rider/plugins/test/fun_test_v2.lua
+                    filename: /path/to/rider/plugins/test/fun_test_v2.lua
                 name: fun_test_v2
 
           - name: envoy.router

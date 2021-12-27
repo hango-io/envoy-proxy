@@ -12,6 +12,7 @@
 
 #include "filters/http/rider/common.h"
 #include "filters/http/rider/context_interfaces.h"
+#include <string>
 
 namespace Envoy {
 namespace Proxy {
@@ -20,6 +21,8 @@ namespace Rider {
 
 class LuaVirtualMachine;
 class Filter;
+
+enum class Version { v1, v2 };
 
 /**
  * Plugin is first constructed when LDS init to load data and validate things.
@@ -77,7 +80,7 @@ public:
   int& onResponseHeaderRef() { return on_response_header_ref_; }
   int& onResponseBodyRef() { return on_response_body_ref_; }
 
-  std::string& version() { return version_; }
+  Version& version() { return version_; }
 
 private:
   std::shared_ptr<LuaVirtualMachine> vm_;
@@ -91,7 +94,7 @@ private:
   int on_request_body_ref_{LUA_NOREF};
   int on_response_header_ref_{LUA_NOREF};
   int on_response_body_ref_{LUA_NOREF};
-  std::string version_;
+  Version version_;
 };
 
 using PluginHandleSharedPtr = std::shared_ptr<PluginHandle>;

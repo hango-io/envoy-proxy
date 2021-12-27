@@ -161,11 +161,10 @@ Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap& headers,
   }
 
   request_headers_ = &headers;
-  if (config_.pluginHandle().version().empty()) {
+  if (config_.pluginHandle().version() == Version::v1) {
     return doHeaders(request_stream_wrapper_, StreamDirection::DownstreamToUpstream,
                      *(config_.pluginHandle().vm()), request_coroutine_, decoder_callbacks_,
-                     config_.pluginHandle().onRequestRef(),
-                     config_.pluginHandle().onRequestBodyRef(), headers, end_stream);
+                     config_.pluginHandle().onRequestRef(), headers, end_stream);
   } else {
     return doHeaders(request_stream_wrapper_, StreamDirection::DownstreamToUpstream,
                      *(config_.pluginHandle().vm()), request_coroutine_, decoder_callbacks_,
@@ -180,11 +179,10 @@ Http::FilterHeadersStatus Filter::encodeHeaders(Http::ResponseHeaderMap& headers
   }
 
   response_headers_ = &headers;
-  if (config_.pluginHandle().version().empty()) {
+  if (config_.pluginHandle().version() == Version::v1) {
     return doHeaders(response_stream_wrapper_, StreamDirection::UpstreamToDownstream,
                      *(config_.pluginHandle().vm()), response_coroutine_, encoder_callbacks_,
-                     config_.pluginHandle().onResponseRef(),
-                     config_.pluginHandle().onResponseBodyRef(), headers, end_stream);
+                     config_.pluginHandle().onResponseRef(), headers, end_stream);
   } else {
     return doHeaders(response_stream_wrapper_, StreamDirection::UpstreamToDownstream,
                      *(config_.pluginHandle().vm()), response_coroutine_, encoder_callbacks_,
@@ -196,9 +194,35 @@ Http::FilterHeadersStatus Filter::encodeHeaders(Http::ResponseHeaderMap& headers
 Http::FilterHeadersStatus Filter::doHeaders(StreamWrapperPtr& stream_wrapper,
                                             StreamDirection direction, LuaVirtualMachine& vm,
                                             CoroutinePtr& coroutine, FilterCallbacks& callbacks,
+                                            int function_ref, Http::HeaderMap&, bool end_stream) {
+  if (error_ || function_ref == LUA_NOREF) {
+    ENVOY_LOG(debug, "skip do headers");
+    return Http::FilterHeadersStatus::Continue;
+  }
+
+  // TODO(Tong Cai): skipping based on options/matchers. For example, if plugin
+  // depends on route config, we can skip if no route.
+
+  coroutine = vm.createCoroutine();
+  coroutine->initialize(this, direction);
+  stream_wrapper = std::make_unique<StreamWrapper>(*coroutine, *this, callbacks, end_stream);
+
+  Http::FilterHeadersStatus status = Http::FilterHeadersStatus::Continue;
+  try {
+    status = stream_wrapper->start(function_ref);
+  } catch (LuaException& e) {
+    scriptError(e);
+  }
+
+  return status;
+}
+
+Http::FilterHeadersStatus Filter::doHeaders(StreamWrapperPtr& stream_wrapper,
+                                            StreamDirection direction, LuaVirtualMachine& vm,
+                                            CoroutinePtr& coroutine, FilterCallbacks& callbacks,
                                             int function_ref, int function_ref_body,
                                             Http::HeaderMap&, bool end_stream) {
-  if (!config_.pluginHandle().version().empty() && responded && function_ref == LUA_NOREF) {
+  if (responded && function_ref == LUA_NOREF) {
     responded = false;
     return Http::FilterHeadersStatus::StopIteration;
   }
@@ -215,18 +239,10 @@ Http::FilterHeadersStatus Filter::doHeaders(StreamWrapperPtr& stream_wrapper,
   stream_wrapper = std::make_unique<StreamWrapper>(*coroutine, *this, callbacks, end_stream);
 
   Http::FilterHeadersStatus status = Http::FilterHeadersStatus::Continue;
-  if (config_.pluginHandle().version().empty()) {
-    try {
-      status = stream_wrapper->start(function_ref);
-    } catch (LuaException& e) {
-      scriptError(e);
-    }
-  } else {
-    try {
-      status = stream_wrapper->start(function_ref, function_ref_body);
-    } catch (LuaException& e) {
-      scriptError(e);
-    }
+  try {
+    status = stream_wrapper->start(function_ref, function_ref_body);
+  } catch (LuaException& e) {
+    scriptError(e);
   }
 
   return status;
@@ -238,7 +254,7 @@ void Filter::scriptError(const LuaException& e) {
 }
 
 Http::FilterDataStatus Filter::decodeData(Buffer::Instance& data, bool end_stream) {
-  if (config_.pluginHandle().version().empty()) {
+  if (config_.pluginHandle().version() == Version::v1) {
     if (error_ || !request_stream_wrapper_.get()) {
       return Http::FilterDataStatus::Continue;
     }
@@ -259,7 +275,7 @@ Http::FilterDataStatus Filter::decodeData(Buffer::Instance& data, bool end_strea
 }
 
 Http::FilterDataStatus Filter::encodeData(Buffer::Instance& data, bool end_stream) {
-  if (config_.pluginHandle().version().empty()) {
+  if (config_.pluginHandle().version() == Version::v1) {
     if (error_ || !response_stream_wrapper_.get()) {
       return Http::FilterDataStatus::Continue;
     }
@@ -754,7 +770,7 @@ int Filter::getMetadataValue(envoy_lua_ffi_str_t* filter_name, envoy_lua_ffi_str
 }
 
 int Filter::getDynamicMetadataValue(envoy_lua_ffi_str_t* filter_name, envoy_lua_ffi_str_t* key,
-                             envoy_lua_ffi_str_t* value) {
+                                    envoy_lua_ffi_str_t* value) {
 
   const auto& metadatas = decoder_callbacks_.callbacks_->streamInfo().dynamicMetadata();
   const auto& filter_it =
