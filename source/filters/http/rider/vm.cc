@@ -1,5 +1,6 @@
 #include "filters/http/rider/vm.h"
 #include "filters/http/rider/capi.h"
+#include "filters/http/rider/context.h"
 
 #include "extensions/filters/common/lua/wrappers.h"
 
@@ -122,7 +123,15 @@ PluginHandleSharedPtr LuaThread::startPlugin(PluginSharedPtr plugin) {
   const char* raw_version = luaL_optlstring(state, -1, nullptr, &version_size);
   if (raw_version != nullptr) {
     std::string version(raw_version, version_size);
-    plugin_handle->version() = version;
+    if (version == "v1") {
+      plugin_handle->version() = Version::v1;
+    } else if(version == "v2") {
+      plugin_handle->version() = Version::v2;
+    } else {
+      plugin_handle->version() = Version::v1;
+    }
+  } else {
+    plugin_handle->version() = Version::v1;
   }
   lua_pop(state, 1);
 

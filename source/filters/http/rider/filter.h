@@ -301,6 +301,10 @@ private:
   Http::FilterHeadersStatus doHeaders(StreamWrapperPtr& stream_wrapper, StreamDirection direction,
                                       LuaVirtualMachine& vm, CoroutinePtr& coroutine,
                                       FilterCallbacks& callbacks, int function_ref,
+                                      Http::HeaderMap&, bool end_stream);
+  Http::FilterHeadersStatus doHeaders(StreamWrapperPtr& stream_wrapper, StreamDirection direction,
+                                      LuaVirtualMachine& vm, CoroutinePtr& coroutine,
+                                      FilterCallbacks& callbacks, int function_ref_header,
                                       int function_ref_body, Http::HeaderMap&, bool end_stream);
 
   Http::FilterDataStatus doData(StreamWrapper& stream_wrapper, Buffer::Instance& data,
