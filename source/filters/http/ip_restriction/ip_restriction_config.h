@@ -2,8 +2,8 @@
 
 #include "envoy/registry/registry.h"
 
-#include "extensions/filters/http/common/factory_base.h"
-#include "filters/http/ip_restriction/ip_restriction.h"
+#include "source/extensions/filters/http/common/factory_base.h"
+#include "source/filters/http/ip_restriction/ip_restriction.h"
 
 namespace Envoy {
 namespace Proxy {

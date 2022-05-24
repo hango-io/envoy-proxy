@@ -2,8 +2,8 @@
 
 #include "envoy/registry/registry.h"
 
-#include "extensions/filters/http/common/factory_base.h"
-#include "filters/http/local_limit/local_limit_filter.h"
+#include "source/extensions/filters/http/common/factory_base.h"
+#include "source/filters/http/local_limit/local_limit_filter.h"
 
 namespace Envoy {
 namespace Proxy {

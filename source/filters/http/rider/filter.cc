@@ -1,22 +1,21 @@
-#include "filters/http/rider/filter.h"
+#include "source/filters/http/rider/filter.h"
 
 #include <cstdint>
 #include <memory>
 
-#include "common/common/logger.h"
 #include "envoy/http/codes.h"
 #include "envoy/upstream/cluster_manager.h"
 
-#include "common/buffer/buffer_impl.h"
-#include "common/common/assert.h"
-#include "common/common/enum_to_int.h"
-#include "common/crypto/utility.h"
-#include "common/http/message_impl.h"
-#include "common/http/utility.h"
-#include "common/http/header_utility.h"
-
-#include "extensions/filters/common/lua/wrappers.h"
-#include "filters/http/rider/context.h"
+#include "source/common/buffer/buffer_impl.h"
+#include "source/common/common/assert.h"
+#include "source/common/common/enum_to_int.h"
+#include "source/common/common/logger.h"
+#include "source/common/crypto/utility.h"
+#include "source/common/http/header_utility.h"
+#include "source/common/http/message_impl.h"
+#include "source/common/http/utility.h"
+#include "source/extensions/filters/common/lua/wrappers.h"
+#include "source/filters/http/rider/context.h"
 
 namespace Envoy {
 namespace Proxy {
@@ -41,7 +40,7 @@ ConfigImpl::ConfigImpl(const FilterConfigProto& proto_config,
 
   plugin_ = std::make_shared<Plugin>(
       proto_config.plugin().name(), "", code,
-      MessageUtil::getJsonStringFromMessage(proto_config.plugin().config()));
+      MessageUtil::getJsonStringFromMessageOrError(proto_config.plugin().config()));
   PluginSharedPtr plugin = plugin_;
 
   auto vm_id = proto_config.plugin().vm_config().vm_id();
@@ -65,14 +64,15 @@ ConfigImpl::ConfigImpl(const FilterConfigProto& proto_config,
       });
 
   if (proto_config.plugin().has_log_file() && !proto_config.plugin().log_file().path().empty()) {
-    log_file_ = log_manager.createAccessLog(proto_config.plugin().log_file().path());
+    log_file_ = log_manager.createAccessLog(
+        {Envoy::Filesystem::DestinationType::File, proto_config.plugin().log_file().path()});
   }
 }
 
 RoutePluginConfig::RoutePluginConfig(
     const proxy::filters::http::rider::v3alpha1::RoutePluginConfig& proto_config)
     : name_(proto_config.name()),
-      configuration_(MessageUtil::getJsonStringFromMessage(proto_config)),
+      configuration_(MessageUtil::getJsonStringFromMessageOrError(proto_config)),
       hash_(MessageUtil::hash(proto_config)) {}
 
 RouteConfig::RouteConfig(
@@ -109,17 +109,7 @@ void Filter::resetInternalState() {
 
 // lookupPerFilterConfig find a proper per_filter_config given plugin name.
 static void lookupPerFilterConfig(absl::string_view name, absl::optional<RoutePluginConfig>& config,
-                                  const RouteConfig* route_entry_config,
-                                  const RouteConfig* route_config,
-                                  const RouteConfig* virtualhost_config) {
-  if (route_entry_config != nullptr) {
-    for (const auto& it : route_entry_config->plugins()) {
-      if (name == it.name()) {
-        config.emplace(it.name(), it.configuration(), it.hash());
-        return;
-      }
-    }
-  }
+                                  const RouteConfig* route_config) {
 
   if (route_config != nullptr) {
     for (const auto& it : route_config->plugins()) {
@@ -129,16 +119,6 @@ static void lookupPerFilterConfig(absl::string_view name, absl::optional<RoutePl
       }
     }
   }
-
-  if (virtualhost_config != nullptr) {
-    for (const auto& it : virtualhost_config->plugins()) {
-      if (name == it.name()) {
-        config.emplace(it.name(), it.configuration(), it.hash());
-        return;
-      }
-    }
-  }
-
   return;
 }
 
@@ -152,12 +132,9 @@ Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap& headers,
       return Http::FilterHeadersStatus::Continue;
     }
   } else {
-    const auto* route_entry = route->routeEntry();
     lookupPerFilterConfig(
         config_.pluginName(), route_config_,
-        dynamic_cast<const RouteConfig*>(route_entry->perFilterConfig(name())),
-        dynamic_cast<const RouteConfig*>(route->perFilterConfig(name())),
-        dynamic_cast<const RouteConfig*>(route_entry->virtualHost().perFilterConfig(name())));
+        dynamic_cast<const RouteConfig*>(route->mostSpecificPerFilterConfig(name())));
   }
 
   request_headers_ = &headers;
@@ -191,10 +168,10 @@ Http::FilterHeadersStatus Filter::encodeHeaders(Http::ResponseHeaderMap& headers
   }
 }
 
-Http::FilterHeadersStatus Filter::doHeaders(StreamWrapperPtr& stream_wrapper,
-                                            StreamDirection direction, LuaVirtualMachine& vm,
-                                            CoroutinePtr& coroutine, FilterCallbacks& callbacks,
-                                            int function_ref, Http::HeaderMap&, bool end_stream) {
+Http::FilterHeadersStatus
+Filter::doHeaders(StreamWrapperPtr& stream_wrapper, StreamDirection direction,
+                  LuaVirtualMachine& vm, CoroutinePtr& coroutine, FilterCallbacks& callbacks,
+                  int function_ref, Http::RequestOrResponseHeaderMap& headers, bool end_stream) {
   if (error_ || function_ref == LUA_NOREF) {
     ENVOY_LOG(debug, "skip do headers");
     return Http::FilterHeadersStatus::Continue;
@@ -205,7 +182,8 @@ Http::FilterHeadersStatus Filter::doHeaders(StreamWrapperPtr& stream_wrapper,
 
   coroutine = vm.createCoroutine();
   coroutine->initialize(this, direction);
-  stream_wrapper = std::make_unique<StreamWrapper>(*coroutine, *this, callbacks, end_stream);
+  stream_wrapper =
+      std::make_unique<StreamWrapper>(*coroutine, *this, callbacks, &headers, end_stream);
 
   Http::FilterHeadersStatus status = Http::FilterHeadersStatus::Continue;
   try {
@@ -221,7 +199,8 @@ Http::FilterHeadersStatus Filter::doHeaders(StreamWrapperPtr& stream_wrapper,
                                             StreamDirection direction, LuaVirtualMachine& vm,
                                             CoroutinePtr& coroutine, FilterCallbacks& callbacks,
                                             int function_ref, int function_ref_body,
-                                            Http::HeaderMap&, bool end_stream) {
+                                            Http::RequestOrResponseHeaderMap& headers,
+                                            bool end_stream) {
   if (responded && function_ref == LUA_NOREF) {
     responded = false;
     return Http::FilterHeadersStatus::StopIteration;
@@ -236,7 +215,8 @@ Http::FilterHeadersStatus Filter::doHeaders(StreamWrapperPtr& stream_wrapper,
 
   coroutine = vm.createCoroutine();
   coroutine->initialize(this, direction);
-  stream_wrapper = std::make_unique<StreamWrapper>(*coroutine, *this, callbacks, end_stream);
+  stream_wrapper =
+      std::make_unique<StreamWrapper>(*coroutine, *this, callbacks, &headers, end_stream);
 
   Http::FilterHeadersStatus status = Http::FilterHeadersStatus::Continue;
   try {
@@ -266,8 +246,8 @@ Http::FilterDataStatus Filter::decodeData(Buffer::Instance& data, bool end_strea
     if (!request_stream_wrapper_.get()) {
       request_coroutine_ = config_.pluginHandle().vm()->createCoroutine();
       request_coroutine_->initialize(this, StreamDirection::DownstreamToUpstream);
-      request_stream_wrapper_ = std::make_unique<StreamWrapper>(*request_coroutine_, *this,
-                                                                decoder_callbacks_, end_stream);
+      request_stream_wrapper_ = std::make_unique<StreamWrapper>(
+          *request_coroutine_, *this, decoder_callbacks_, request_headers_, end_stream);
     }
     return doData(*request_stream_wrapper_, config_.pluginHandle().onRequestBodyRef(), data,
                   end_stream);
@@ -287,8 +267,8 @@ Http::FilterDataStatus Filter::encodeData(Buffer::Instance& data, bool end_strea
     if (!response_stream_wrapper_.get()) {
       response_coroutine_ = config_.pluginHandle().vm()->createCoroutine();
       response_coroutine_->initialize(this, StreamDirection::UpstreamToDownstream);
-      response_stream_wrapper_ = std::make_unique<StreamWrapper>(*response_coroutine_, *this,
-                                                                 encoder_callbacks_, end_stream);
+      response_stream_wrapper_ = std::make_unique<StreamWrapper>(
+          *response_coroutine_, *this, encoder_callbacks_, response_headers_, end_stream);
     }
     return doData(*response_stream_wrapper_, config_.pluginHandle().onResponseBodyRef(), data,
                   end_stream);
@@ -438,8 +418,12 @@ void Filter::EncoderCallbacks::respond(Http::ResponseHeaderMapPtr&&, Buffer::Ins
 const char* Filter::upstreamHost() {
   ASSERT(decoder_callbacks_.callbacks_);
 
-  auto host = decoder_callbacks_.callbacks_->streamInfo().upstreamHost();
-  if (!host.get()) {
+  auto upstream_info = decoder_callbacks_.callbacks_->streamInfo().upstreamInfo();
+  if (upstream_info == nullptr) {
+    return nullptr;
+  }
+  auto host = upstream_info->upstreamHost();
+  if (host == nullptr) {
     return nullptr;
   }
 
@@ -449,10 +433,15 @@ const char* Filter::upstreamHost() {
 const char* Filter::upstreamCluster() {
   ASSERT(decoder_callbacks_.callbacks_);
 
-  auto host = decoder_callbacks_.callbacks_->streamInfo().upstreamHost();
-  if (!host.get()) {
+  auto upstream_info = decoder_callbacks_.callbacks_->streamInfo().upstreamInfo();
+  if (upstream_info == nullptr) {
     return nullptr;
   }
+  auto host = upstream_info->upstreamHost();
+  if (host == nullptr) {
+    return nullptr;
+  }
+
   return host->cluster().name().c_str();
 }
 
@@ -735,7 +724,7 @@ int Filter::getMetadataValue(envoy_lua_ffi_str_t* filter_name, envoy_lua_ffi_str
     return static_cast<int>(FFIReturnCode::NotFound);
   }
 
-  const auto& metadatas = decoder_callbacks_.callbacks_->route()->routeEntry()->metadata();
+  const auto& metadatas = decoder_callbacks_.callbacks_->route()->metadata();
   const auto& filter_it =
       metadatas.filter_metadata().find(std::string(filter_name->data, filter_name->len));
   if (filter_it == metadatas.filter_metadata().end()) {
@@ -831,8 +820,8 @@ int Filter::getBody(LuaStreamOpSourceType type, envoy_lua_ffi_str_t* body) {
 }
 
 StreamWrapper::StreamWrapper(Coroutine& coroutine, Filter& filter, FilterCallbacks& callbacks,
-                             bool end_stream)
-    : filter_(filter), filter_callbacks_(callbacks), coroutine_(coroutine),
+                             Http::RequestOrResponseHeaderMap* headers, bool end_stream)
+    : filter_(filter), headers_(headers), filter_callbacks_(callbacks), coroutine_(coroutine),
       yield_callback_([this]() {
         if (this->state_ == State::Running) {
           throw LuaException("Lua code performed an unexpected yield");
@@ -907,7 +896,7 @@ Http::FilterDataStatus StreamWrapper::onData(Buffer::Instance& data, bool end_st
     Envoy::Extensions::Filters::Common::Lua::LuaDeathRef<
         Envoy::Extensions::Filters::Common::Lua::BufferWrapper>
         wrapper(Envoy::Extensions::Filters::Common::Lua::BufferWrapper::create(
-                    coroutine_.luaState(), data),
+                    coroutine_.luaState(), *headers_, data),
                 true);
     state_ = State::Running;
     coroutine_.resume(0, yield_callback_);
@@ -1023,12 +1012,12 @@ void StreamWrapper::buildHeadersFromTable(Http::HeaderMap& headers, lua_State* s
  *         | body(string)    |
  *         | headers(table)  |
  *         | cluster(string) |
- *         |      ...        |
+ *         |      ... |
  *
  * After:
  *         | body(string)   | <- top
  *         | headers(table) |
- *         |      ...     |
+ *         |      ... |
  * */
 int StreamWrapper::luaHttpCall(lua_State* state) {
   ASSERT(state_ == State::Running);
@@ -1167,7 +1156,7 @@ int StreamWrapper::luaBody(lua_State* state) {
       return 0;
     } else {
       Envoy::Extensions::Filters::Common::Lua::BufferWrapper::create(
-          state, const_cast<Buffer::Instance&>(*filter_callbacks_.bufferedBody()));
+          state, *headers_, const_cast<Buffer::Instance&>(*filter_callbacks_.bufferedBody()));
       return 1;
     }
   } else if (saw_body_) {

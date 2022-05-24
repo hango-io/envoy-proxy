@@ -1,4 +1,4 @@
-#include "filters/http/static_downgrade/static_downgrade_factory.h"
+#include "source/filters/http/static_downgrade/static_downgrade_factory.h"
 
 #include "api/proxy/filters/http/static_downgrade/v2/static_downgrade.pb.h"
 

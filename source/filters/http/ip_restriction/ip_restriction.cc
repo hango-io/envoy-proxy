@@ -1,11 +1,11 @@
-#include "filters/http/ip_restriction/ip_restriction.h"
+#include "source/filters/http/ip_restriction/ip_restriction.h"
 
 #include "envoy/common/exception.h"
 
-#include "common/common/assert.h"
-#include "common/http/utility.h"
-#include "common/network/address_impl.h"
-#include "common/network/utility.h"
+#include "source/common/common/assert.h"
+#include "source/common/http/utility.h"
+#include "source/common/network/address_impl.h"
+#include "source/common/network/utility.h"
 
 namespace Envoy {
 namespace Proxy {

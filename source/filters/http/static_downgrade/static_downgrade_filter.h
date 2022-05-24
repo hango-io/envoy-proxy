@@ -1,11 +1,11 @@
 #pragma once
 
 #include "api/proxy/filters/http/static_downgrade/v2/static_downgrade.pb.h"
-#include "common/http/header_utility.h"
+#include "source/common/http/header_utility.h"
 #include "envoy/http/filter.h"
 #include "envoy/server/filter_config.h"
 
-#include "extensions/filters/http/common/pass_through_filter.h"
+#include "source/extensions/filters/http/common/pass_through_filter.h"
 
 #include <string>
 

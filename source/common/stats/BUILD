@@ -14,7 +14,7 @@ envoy_cc_library(
     hdrs = ["rolling_number.h"],
     repository = "@envoy",
     deps = [
-        "@envoy//include/envoy/common:time_interface",
+        "@envoy//envoy/common:time_interface",
         "@envoy//source/common/common:logger_lib",
     ],
      

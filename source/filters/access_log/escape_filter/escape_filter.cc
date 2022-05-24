@@ -1,8 +1,8 @@
 
-#include "filters/access_log/escape_filter/escape_filter.h"
-#include "common/common/proxy_utility.h"
-#include "common/config/utility.h"
-#include "common/protobuf/message_validator_impl.h"
+#include "source/filters/access_log/escape_filter/escape_filter.h"
+#include "source/common/common/proxy_utility.h"
+#include "source/common/config/utility.h"
+#include "source/common/protobuf/message_validator_impl.h"
 #include "envoy/registry/registry.h"
 
 namespace Envoy {
@@ -21,8 +21,7 @@ EscapeFilterFactory::createFilter(const envoy::config::accesslog::v3::ExtensionF
   proxy::filters::access_log::escape_filter::v2::ProtoConfig proto_config;
 
   auto visitor = Envoy::ProtobufMessage::StrictValidationVisitorImpl();
-  Config::Utility::translateOpaqueConfig(
-      config.typed_config(), config.hidden_envoy_deprecated_config(), visitor, proto_config);
+  Config::Utility::translateOpaqueConfig(config.typed_config(), visitor, proto_config);
   return std::make_unique<EscapeFilter>(proto_config);
 }
 

@@ -1,13 +1,12 @@
 #pragma once
 
-#include "api/proxy/filters/http/rider/v3alpha1/rider.pb.h"
-#include "api/proxy/filters/http/rider/v3alpha1/rider.pb.validate.h"
-
 #include "envoy/registry/registry.h"
 
-#include "filters/http/rider/filter.h"
+#include "source/extensions/filters/http/common/factory_base.h"
+#include "source/filters/http/rider/filter.h"
 
-#include "extensions/filters/http/common/factory_base.h"
+#include "api/proxy/filters/http/rider/v3alpha1/rider.pb.h"
+#include "api/proxy/filters/http/rider/v3alpha1/rider.pb.validate.h"
 
 namespace Envoy {
 namespace Proxy {
@@ -18,7 +17,8 @@ namespace Rider {
  * Config registration for the Rider filter. @see NamedHttpFilterConfigFactory.
  */
 class RiderFilterConfigFactory
-    : public Envoy::Extensions::HttpFilters::Common::FactoryBase<FilterConfigProto, RouteConfigProto> {
+    : public Envoy::Extensions::HttpFilters::Common::FactoryBase<FilterConfigProto,
+                                                                 RouteConfigProto> {
 
 public:
   RiderFilterConfigFactory() : FactoryBase(Filter::name()) {}

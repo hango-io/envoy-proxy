@@ -2,8 +2,8 @@
 
 #include "envoy/registry/registry.h"
 
-#include "extensions/filters/http/common/factory_base.h"
-#include "filters/http/static_downgrade/static_downgrade_filter.h"
+#include "source/extensions/filters/http/common/factory_base.h"
+#include "source/filters/http/static_downgrade/static_downgrade_filter.h"
 
 namespace Envoy {
 namespace Proxy {

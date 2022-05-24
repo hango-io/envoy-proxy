@@ -17,7 +17,7 @@ envoy_cc_library(
         "//api/proxy/filters/http/metadata_hub/v2:pkg_cc_proto",
         "//source/common/filter_state:plain_state_impl",
         "//source/common/metadata:typed_metadata_lib",
-        "@envoy//include/envoy/stream_info:filter_state_interface",
+        "@envoy//envoy/stream_info:filter_state_interface",
         "@envoy//source/exe:envoy_common_lib",
     ],
 )
@@ -29,6 +29,6 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         ":metadata_hub_filter_lib",
-        "@envoy//include/envoy/server:filter_config_interface",
+        "@envoy//envoy/server:filter_config_interface",
     ],
 )

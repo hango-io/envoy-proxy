@@ -1,23 +1,25 @@
 #pragma once
 
+#include <string>
+
 #include "envoy/http/filter.h"
 #include "envoy/http/header_map.h"
 #include "envoy/thread_local/thread_local.h"
 
-#include "common/common/c_smart_ptr.h"
-#include "common/common/lock_guard.h"
-#include "common/common/thread.h"
-#include "common/http/utility.h"
-#include "common/singleton/const_singleton.h"
-
-#include "filters/http/rider/common.h"
-#include "filters/http/rider/context_interfaces.h"
-#include <string>
+#include "source/common/common/c_smart_ptr.h"
+#include "source/common/common/lock_guard.h"
+#include "source/common/common/thread.h"
+#include "source/common/http/utility.h"
+#include "source/common/singleton/const_singleton.h"
+#include "source/filters/http/rider/common.h"
+#include "source/filters/http/rider/context_interfaces.h"
 
 namespace Envoy {
 namespace Proxy {
 namespace HttpFilters {
 namespace Rider {
+
+#define NOT_IMPLEMENTED_GCOVR_EXCL_LINE PANIC("not implemented")
 
 class LuaVirtualMachine;
 class Filter;

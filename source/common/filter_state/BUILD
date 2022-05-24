@@ -14,7 +14,7 @@ envoy_cc_library(
     hdrs = ["plain_state.h"],
     repository = "@envoy",
     deps = [
-        "@envoy//include/envoy/stream_info:filter_state_interface",
+        "@envoy//envoy/stream_info:filter_state_interface",
         "@envoy//source/common/common:utility_lib",
         "//source/common/common:proxy_utility_lib",
     ],

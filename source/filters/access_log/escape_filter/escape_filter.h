@@ -1,8 +1,8 @@
 #include "api/proxy/filters/access_log/escape_filter/v2/escape_filter.pb.h"
 
-#include "common/access_log/access_log_impl.h"
-#include "common/http/headers.h"
-#include "common/protobuf/protobuf.h"
+#include "source/common/access_log/access_log_impl.h"
+#include "source/common/http/headers.h"
+#include "source/common/protobuf/protobuf.h"
 
 namespace Envoy {
 namespace Proxy {

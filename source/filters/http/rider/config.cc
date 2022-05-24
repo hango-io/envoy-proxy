@@ -1,10 +1,10 @@
+#include "source/filters/http/rider/config.h"
+
 #include <memory>
 
 #include "envoy/registry/registry.h"
 
-#include "filters/http/rider/config.h"
-
-#include "common/protobuf/utility.h"
+#include "source/common/protobuf/utility.h"
 
 namespace Envoy {
 namespace Proxy {

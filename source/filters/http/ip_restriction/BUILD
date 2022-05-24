@@ -26,6 +26,6 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         ":ip_restriction_filter_lib",
-        "@envoy//include/envoy/server:filter_config_interface",
+        "@envoy//envoy/server:filter_config_interface",
     ],
 )

@@ -2,20 +2,19 @@
 
 #include <unordered_map>
 
-#include "api/proxy/filters/http/rider/v3alpha1/rider.pb.h"
 #include "envoy/http/filter.h"
 #include "envoy/http/header_map.h"
 
-#include "extensions/filters/common/lua/lua.h"
+#include "source/common/common/assert.h"
+#include "source/common/common/c_smart_ptr.h"
+#include "source/common/common/lock_guard.h"
+#include "source/common/common/thread.h"
+#include "source/common/http/utility.h"
+#include "source/extensions/filters/common/lua/lua.h"
+#include "source/filters/http/rider/common.h"
+#include "source/filters/http/rider/context.h"
 
-#include "common/common/c_smart_ptr.h"
-#include "common/common/lock_guard.h"
-#include "common/common/thread.h"
-#include "common/common/assert.h"
-#include "common/http/utility.h"
-
-#include "filters/http/rider/common.h"
-#include "filters/http/rider/context.h"
+#include "api/proxy/filters/http/rider/v3alpha1/rider.pb.h"
 
 namespace Envoy {
 namespace Proxy {

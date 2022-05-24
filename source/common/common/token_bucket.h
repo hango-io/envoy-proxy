@@ -1,12 +1,11 @@
 #pragma once
 
+#include "envoy/server/filter_config.h"
 #include "envoy/thread_local/thread_local.h"
 
-#include "common/common/lock_guard.h"
-#include "common/common/token_bucket_impl.h"
-#include "common/common/thread.h"
-
-#include "envoy/server/filter_config.h"
+#include "source/common/common/lock_guard.h"
+#include "source/common/common/thread.h"
+#include "source/common/common/token_bucket_impl.h"
 
 namespace Envoy {
 namespace Proxy {
@@ -24,13 +23,18 @@ public:
     Thread::LockGuard guard(lock_);
     return impl_.consume(tokens, allow_partial);
   }
+  uint64_t consume(uint64_t tokens, bool allow_partial,
+                   std::chrono::milliseconds& time_to_next_token) override {
+    Thread::LockGuard guard(lock_);
+    return impl_.consume(tokens, allow_partial, time_to_next_token);
+  }
   std::chrono::milliseconds nextTokenAvailable() override {
     Thread::LockGuard guard(lock_);
     return impl_.nextTokenAvailable();
   }
-  void reset(uint64_t num_tokens) override {
+  void maybeReset(uint64_t num_tokens) override {
     Thread::LockGuard guard(lock_);
-    return impl_.reset(num_tokens);
+    return impl_.maybeReset(num_tokens);
   }
 
 private:
@@ -56,11 +60,15 @@ public:
   uint64_t consume(uint64_t tokens, bool allow_partial) override {
     return impl_slot_ref_->impl_.consume(tokens, allow_partial);
   }
+  uint64_t consume(uint64_t tokens, bool allow_partial,
+                   std::chrono::milliseconds& time_to_next_token) override {
+    return impl_slot_ref_->impl_.consume(tokens, allow_partial, time_to_next_token);
+  }
   std::chrono::milliseconds nextTokenAvailable() override {
     return impl_slot_ref_->impl_.nextTokenAvailable();
   }
 
-  void reset(uint64_t num_tokens) override;
+  void maybeReset(uint64_t num_tokens) override;
 
   ~TheadLocalTokenBucket() {
     if (!main_dispatcher_.isThreadSafe()) {

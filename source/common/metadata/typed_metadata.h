@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 
-#include "common/protobuf/protobuf.h"
+#include "source/common/protobuf/protobuf.h"
 
 #include "envoy/config/typed_metadata.h"
 
