@@ -3,15 +3,13 @@
 #include "envoy/http/async_client.h"
 #include "envoy/http/filter.h"
 
-#include "common/buffer/buffer_impl.h"
-#include "common/config/datasource.h"
-#include "common/http/utility.h"
-#include "common/protobuf/utility.h"
-
-#include "extensions/filters/common/lua/wrappers.h"
-
-#include "filters/http/rider/context.h"
-#include "filters/http/rider/vm.h"
+#include "source/common/buffer/buffer_impl.h"
+#include "source/common/config/datasource.h"
+#include "source/common/http/utility.h"
+#include "source/common/protobuf/utility.h"
+#include "source/extensions/filters/common/lua/wrappers.h"
+#include "source/filters/http/rider/context.h"
+#include "source/filters/http/rider/vm.h"
 
 namespace Envoy {
 namespace Proxy {
@@ -145,7 +143,8 @@ public:
     Responded
   };
 
-  StreamWrapper(Coroutine& coroutine, Filter& filter, FilterCallbacks& callbacks, bool end_stream);
+  StreamWrapper(Coroutine& coroutine, Filter& filter, FilterCallbacks& callbacks,
+                Http::RequestOrResponseHeaderMap* headers, bool end_stream);
 
   Http::FilterHeadersStatus start(int function_ref);
   Http::FilterHeadersStatus start(int function_ref, int function_ref_body);
@@ -173,6 +172,7 @@ public:
 
 private:
   Filter& filter_;
+  Http::RequestOrResponseHeaderMap* headers_;
   FilterCallbacks& filter_callbacks_;
   State state_{State::Running};
   Coroutine& coroutine_;
@@ -223,7 +223,7 @@ public:
   }
 
   // Http::StreamEncoderFilter
-  Http::FilterHeadersStatus encode100ContinueHeaders(Http::ResponseHeaderMap&) override {
+  Http::FilterHeadersStatus encode1xxHeaders(Http::ResponseHeaderMap&) override {
     return Http::FilterHeadersStatus::Continue;
   }
   Http::FilterHeadersStatus encodeHeaders(Http::ResponseHeaderMap& headers,
@@ -298,14 +298,17 @@ public:
   bool responded{false};
 
 private:
+  friend class StreamWrapper;
+
   Http::FilterHeadersStatus doHeaders(StreamWrapperPtr& stream_wrapper, StreamDirection direction,
                                       LuaVirtualMachine& vm, CoroutinePtr& coroutine,
                                       FilterCallbacks& callbacks, int function_ref,
-                                      Http::HeaderMap&, bool end_stream);
+                                      Http::RequestOrResponseHeaderMap&, bool end_stream);
   Http::FilterHeadersStatus doHeaders(StreamWrapperPtr& stream_wrapper, StreamDirection direction,
                                       LuaVirtualMachine& vm, CoroutinePtr& coroutine,
                                       FilterCallbacks& callbacks, int function_ref_header,
-                                      int function_ref_body, Http::HeaderMap&, bool end_stream);
+                                      int function_ref_body, Http::RequestOrResponseHeaderMap&,
+                                      bool end_stream);
 
   Http::FilterDataStatus doData(StreamWrapper& stream_wrapper, Buffer::Instance& data,
                                 bool end_stream);

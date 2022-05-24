@@ -1,8 +1,7 @@
-#include "common/common/assert.h"
-
-#include "filters/http/rider/common.h"
-#include "filters/http/rider/context.h"
-#include "filters/http/rider/filter.h"
+#include "source/common/common/assert.h"
+#include "source/filters/http/rider/common.h"
+#include "source/filters/http/rider/context.h"
+#include "source/filters/http/rider/filter.h"
 
 namespace Envoy {
 namespace Proxy {

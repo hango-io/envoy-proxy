@@ -15,7 +15,7 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         "//source/common/common:proxy_utility_lib",
-        "@envoy//include/envoy/config:typed_metadata_interface",
+        "@envoy//envoy/config:typed_metadata_interface",
         "@envoy//source/common/common:utility_lib",
         "@envoy//source/common/protobuf",
     ],

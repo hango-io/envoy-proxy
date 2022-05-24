@@ -1,13 +1,13 @@
-#include "filters/http/rider/context.h"
-#include "filters/http/rider/filter.h"
+#include "source/filters/http/rider/context.h"
+
+#include "source/filters/http/rider/filter.h"
 
 namespace Envoy {
 namespace Proxy {
 namespace HttpFilters {
 namespace Rider {
 
-PluginHandle::PluginHandle(std::shared_ptr<LuaVirtualMachine> vm,
-                           std::shared_ptr<Plugin> plugin)
+PluginHandle::PluginHandle(std::shared_ptr<LuaVirtualMachine> vm, std::shared_ptr<Plugin> plugin)
     : vm_(vm), plugin_(plugin) {}
 
 PluginHandle::~PluginHandle() {
@@ -15,7 +15,7 @@ PluginHandle::~PluginHandle() {
     return;
   }
 
-  lua_State *state = vm_.get()->luaState();
+  lua_State* state = vm_.get()->luaState();
   if (on_configure_ref_ != LUA_NOREF) {
     luaL_unref(state, LUA_REGISTRYINDEX, on_configure_ref_);
   }
@@ -27,23 +27,21 @@ PluginHandle::~PluginHandle() {
   }
 }
 
-ContextBase::ContextBase(LuaVirtualMachine *vm, PluginSharedPtr plugin)
-    : vm_(vm), plugin_(plugin) {
+ContextBase::ContextBase(LuaVirtualMachine* vm, PluginSharedPtr plugin) : vm_(vm), plugin_(plugin) {
   LuaUtils::setContext(vm->luaState(), this);
 }
 
-ContextBase::ContextBase(Filter *filter, LuaVirtualMachine *vm,
-                         PluginSharedPtr plugin)
+ContextBase::ContextBase(Filter* filter, LuaVirtualMachine* vm, PluginSharedPtr plugin)
     : vm_(vm), plugin_(plugin) {
-  LuaUtils::setContext(vm->luaState(), dynamic_cast<ContextBase *>(filter));
+  LuaUtils::setContext(vm->luaState(), dynamic_cast<ContextBase*>(filter));
 }
 
-void ContextBase::onConfigure(PluginHandle &plugin_handle) {
+void ContextBase::onConfigure(PluginHandle& plugin_handle) {
   ASSERT(vm_);
 
   ENVOY_LOG(debug, "plugin {} on configure", plugin_->name());
 
-  lua_State *state = vm_->luaState();
+  lua_State* state = vm_->luaState();
   int saved_top = lua_gettop(state);
   int ref = plugin_handle.onConfigureRef();
   if (ref == LUA_NOREF) {
@@ -61,7 +59,7 @@ void ContextBase::onConfigure(PluginHandle &plugin_handle) {
   lua_settop(state, saved_top);
 }
 
-int ContextBase::getConfiguration(envoy_lua_ffi_str_t *buffer) {
+int ContextBase::getConfiguration(envoy_lua_ffi_str_t* buffer) {
   if (!buffer) {
     return static_cast<int>(FFIReturnCode::BadArgument);
   }
@@ -75,7 +73,7 @@ int ContextBase::getConfiguration(envoy_lua_ffi_str_t *buffer) {
   return static_cast<int>(FFIReturnCode::NotFound);
 }
 
-void ContextBase::log(spdlog::level::level_enum level, const char *message) {
+void ContextBase::log(spdlog::level::level_enum level, const char* message) {
   switch (level) {
   case spdlog::level::trace:
     ENVOY_LOG(trace, "script log: {}", message);

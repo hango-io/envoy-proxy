@@ -1,10 +1,10 @@
-#include "filters/http/rider/vm.h"
-#include "filters/http/rider/capi.h"
-#include "filters/http/rider/context.h"
-
-#include "extensions/filters/common/lua/wrappers.h"
+#include "source/filters/http/rider/vm.h"
 
 #include <unordered_map>
+
+#include "source/extensions/filters/common/lua/wrappers.h"
+#include "source/filters/http/rider/capi.h"
+#include "source/filters/http/rider/context.h"
 
 namespace Envoy {
 namespace Proxy {
@@ -125,7 +125,7 @@ PluginHandleSharedPtr LuaThread::startPlugin(PluginSharedPtr plugin) {
     std::string version(raw_version, version_size);
     if (version == "v1") {
       plugin_handle->version() = Version::v1;
-    } else if(version == "v2") {
+    } else if (version == "v2") {
       plugin_handle->version() = Version::v2;
     } else {
       plugin_handle->version() = Version::v1;

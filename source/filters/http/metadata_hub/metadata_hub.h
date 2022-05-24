@@ -13,15 +13,13 @@
 #include "envoy/stats/scope.h"
 #include "envoy/stats/stats_macros.h"
 
-#include "common/buffer/watermark_buffer.h"
-#include "common/common/token_bucket_impl.h"
-
-#include "extensions/filters/http/common/pass_through_filter.h"
+#include "source/common/buffer/watermark_buffer.h"
+#include "source/common/common/token_bucket_impl.h"
+#include "source/common/filter_state/plain_state.h"
+#include "source/common/metadata/typed_metadata.h"
+#include "source/extensions/filters/http/common/pass_through_filter.h"
 
 #include "api/proxy/filters/http/metadata_hub/v2/metadata_hub.pb.h"
-
-#include "common/filter_state/plain_state.h"
-#include "common/metadata/typed_metadata.h"
 
 namespace Envoy {
 namespace Proxy {

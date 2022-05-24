@@ -1,15 +1,15 @@
 #pragma once
 
-#include "api/proxy/filters/http/rider/v3alpha1/rider.pb.h"
 #include "envoy/http/filter.h"
 #include "envoy/http/header_map.h"
 
-#include "common/common/c_smart_ptr.h"
-#include "common/common/lock_guard.h"
-#include "common/common/thread.h"
-#include "common/common/logger.h"
-#include "common/http/utility.h"
+#include "source/common/common/c_smart_ptr.h"
+#include "source/common/common/lock_guard.h"
+#include "source/common/common/logger.h"
+#include "source/common/common/thread.h"
+#include "source/common/http/utility.h"
 
+#include "api/proxy/filters/http/rider/v3alpha1/rider.pb.h"
 #include "lua.hpp"
 
 namespace Envoy {
@@ -148,7 +148,7 @@ public:
    * indicator [0, 1, m+e]
    * After return:
    *         | new table | <- top
-   *         |    ...    |
+   *         |    ... |
    */
   static void createNewGlobalsTable(lua_State* state, int narr, int nrec) {
     lua_createtable(state, narr, nrec + 1);

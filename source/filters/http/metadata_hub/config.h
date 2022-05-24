@@ -2,7 +2,7 @@
 
 #include "envoy/registry/registry.h"
 
-#include "extensions/filters/http/common/factory_base.h"
+#include "source/extensions/filters/http/common/factory_base.h"
 
 namespace Envoy {
 namespace Proxy {

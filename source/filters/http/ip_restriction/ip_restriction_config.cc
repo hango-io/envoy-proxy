@@ -1,4 +1,4 @@
-#include "filters/http/ip_restriction/ip_restriction_config.h"
+#include "source/filters/http/ip_restriction/ip_restriction_config.h"
 
 #include "api/proxy/filters/http/ip_restriction/v2/ip_restriction.pb.h"
 

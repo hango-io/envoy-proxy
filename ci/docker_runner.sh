@@ -33,7 +33,7 @@ START_COMMAND=("/bin/bash" "-lc" "groupadd --gid $(id -g) -f envoygroup \
     && sudo -EHs -u envoybuild bash -c 'cd /source && ${DOCKER_RUNNING_COMMAND}'")
 
 # Replace backslash with forward slash for Windows style paths
-ENVOY_DOCKER_BUILD_DIR=${ENVOY_DOCKER_BUILD_DIR:-"/build"}
+ENVOY_DOCKER_BUILD_DIR=${ENVOY_DOCKER_BUILD_DIR:-"${HOME}/envoy_build"}
 mkdir -p "${ENVOY_DOCKER_BUILD_DIR}"
 
 [[ -n "${SSH_AUTH_SOCK}" ]] && ENVOY_DOCKER_OPTIONS+=(-v "${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK}" -e SSH_AUTH_SOCK)

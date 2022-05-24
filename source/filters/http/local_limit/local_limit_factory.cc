@@ -1,4 +1,4 @@
-#include "filters/http/local_limit/local_limit_factory.h"
+#include "source/filters/http/local_limit/local_limit_factory.h"
 
 #include "api/proxy/filters/http/local_limit/v2/local_limit.pb.h"
 

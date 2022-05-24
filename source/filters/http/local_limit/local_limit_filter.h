@@ -2,15 +2,15 @@
 
 #include <string>
 
-#include "common/http/header_utility.h"
+#include "source/common/http/header_utility.h"
 
 #include "envoy/http/filter.h"
 #include "envoy/server/filter_config.h"
-#include "extensions/filters/http/common/pass_through_filter.h"
+#include "source/extensions/filters/http/common/pass_through_filter.h"
 
 #include "api/proxy/filters/http/local_limit/v2/local_limit.pb.h"
 
-#include "common/common/token_bucket.h"
+#include "source/common/common/token_bucket.h"
 
 namespace Envoy {
 namespace Proxy {

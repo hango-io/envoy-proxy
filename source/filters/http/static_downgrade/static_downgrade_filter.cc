@@ -1,12 +1,12 @@
-#include "filters/http/static_downgrade/static_downgrade_filter.h"
-#include "common/buffer/buffer_impl.h"
-#include "common/common/assert.h"
-#include "common/http/header_map_impl.h"
-#include "common/http/header_utility.h"
-#include "common/http/headers.h"
+#include "source/filters/http/static_downgrade/static_downgrade_filter.h"
+#include "source/common/buffer/buffer_impl.h"
+#include "source/common/common/assert.h"
+#include "source/common/http/header_map_impl.h"
+#include "source/common/http/header_utility.h"
+#include "source/common/http/headers.h"
 #include "envoy/common/exception.h"
 #include "envoy/router/router.h"
-#include "common/http/utility.h"
+#include "source/common/http/utility.h"
 
 namespace Envoy {
 namespace Proxy {

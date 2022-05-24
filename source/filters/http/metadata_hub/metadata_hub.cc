@@ -1,13 +1,12 @@
-#include "filters/http/metadata_hub/metadata_hub.h"
+#include "source/filters/http/metadata_hub/metadata_hub.h"
 
 #include "envoy/common/exception.h"
 
-#include "common/common/assert.h"
-#include "common/http/headers.h"
-#include "common/http/path_utility.h"
-#include "common/http/utility.h"
-
-#include "common/filter_state/plain_state.h"
+#include "source/common/common/assert.h"
+#include "source/common/filter_state/plain_state.h"
+#include "source/common/http/headers.h"
+#include "source/common/http/path_utility.h"
+#include "source/common/http/utility.h"
 
 namespace Envoy {
 namespace Proxy {
@@ -20,6 +19,10 @@ public:
   std::unique_ptr<const Envoy::Config::TypedMetadata::Object>
   parse(const ProtobufWkt::Struct& data) const override {
     return std::make_unique<Common::Metadata::MetadataToSimpleMap>(data);
+  }
+  std::unique_ptr<const Envoy::Config::TypedMetadata::Object>
+  parse(const ProtobufWkt::Any&) const override {
+    return nullptr;
   }
 };
 
@@ -49,7 +52,7 @@ void MetadataHubCommonConfig::handleEncodeHeaders(Http::LowerCaseString&& name,
 #undef CHECK_INLINE_HEADER
 
 MetadataHubCommonConfig::MetadataHubCommonConfig(const ProtoCommonConfig& config) {
-  // Forward compatible with a version of set_to_metadata field
+  // 向前兼容 set_to_metadata 字段一个版本
   ProtoCommonConfig mutable_config(config);
   mutable_config.mutable_decode_headers_to_state()->MergeFrom(config.set_to_metadata());
 
@@ -117,11 +120,11 @@ Http::FilterHeadersStatus HttpMetadataHubFilter::decodeHeaders(Http::RequestHead
                    StreamInfo::FilterState::StateType::ReadOnly);
   }
 
-  // No route metadata namespace is specified,so return directly
+  // 未指定 route metadata 名称空间，故直接返回
   if (config_->routeMatadataToState().empty()) {
     return Http::FilterHeadersStatus::Continue;
   }
-  // if the route does not exist,return directly
+  // 如果路由不存在，则直接返回
   auto route = decoder_callbacks_->route();
   if (!route.get()) {
     return Http::FilterHeadersStatus::Continue;
@@ -131,13 +134,11 @@ Http::FilterHeadersStatus HttpMetadataHubFilter::decodeHeaders(Http::RequestHead
     return Http::FilterHeadersStatus::Continue;
   }
 
-  // The route metadata namespace has been specified and the route exists,then the correspoding
-  // metadata will be inserted into the filter state
-  // It must be completed in the decode stage to avoid the inability to abtain the relevant metadata
-  // in the non-encode stage such as DC
+  // 已指定 route metadata 名称空间，且路由存在，则将对应 metadata 插入 filter state
+  // 必须在 decode 阶段完成该工作，避免 DC 等无 encode 阶段的请求无法获取相关 metadata
   for (const auto& metadata_namespace : config_->routeMatadataToState()) {
     ENVOY_LOG(debug, "Set route metadata in {} to filter state.", metadata_namespace);
-    metadataToState(route_entry->typedMetadata(), state, metadata_namespace,
+    metadataToState(route->typedMetadata(), state, metadata_namespace,
                     decoder_callbacks_->activeSpan());
   }
 
