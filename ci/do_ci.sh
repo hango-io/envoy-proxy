@@ -124,6 +124,8 @@ function envoy_test() {
 
     echo "bazel test ${BAZEL_BUILD_OPTIONS[@]} $TEST_TARGET "
 
+    bazel test ${BAZEL_BUILD_OPTIONS[@]} $TEST_TARGET
+
     trap - EXIT
 }
 
