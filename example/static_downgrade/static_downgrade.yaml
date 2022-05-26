@@ -23,8 +23,8 @@ static_resources:
                           route:
                             cluster: httpbin
                           typed_per_filter_config:
-                            com.netease.staticdowngrade:
-                              "@type": type.googleapis.com/netease.filters.http.static_downgrade.v2.ProtoRouteConfig
+                            proxy.filters.http.staticdowngrade:
+                              "@type": type.googleapis.com/proxy.filters.http.static_downgrade.v2.ProtoRouteConfig
                               downgrade_rpx:
                                 headers:
                                   - name: response_from
@@ -43,8 +43,8 @@ static_resources:
                           route:
                             cluster: httpbin
                           typed_per_filter_config:
-                            com.netease.staticdowngrade:
-                              "@type": type.googleapis.com/netease.filters.http.static_downgrade.v2.ProtoRouteConfig
+                            proxy.filters.http.staticdowngrade:
+                              "@type": type.googleapis.com/proxy.filters.http.static_downgrade.v2.ProtoRouteConfig
                               downgrade_rpx:
                                 headers:
                                   - name: :status
@@ -77,8 +77,8 @@ static_resources:
                           route:
                             cluster: httpbin
                           typed_per_filter_config:
-                            com.netease.staticdowngrade:
-                              "@type": type.googleapis.com/netease.filters.http.static_downgrade.v2.ProtoRouteConfig
+                            proxy.filters.http.staticdowngrade:
+                              "@type": type.googleapis.com/proxy.filters.http.static_downgrade.v2.ProtoRouteConfig
                               downgrade_rqx:
                                 headers:
                                   - name: reqeust_from
@@ -109,8 +109,8 @@ static_resources:
                           route:
                             cluster: httpbin
                           typed_per_filter_config:
-                            com.netease.staticdowngrade:
-                              "@type": type.googleapis.com/netease.filters.http.static_downgrade.v2.ProtoRouteConfig
+                            proxy.filters.http.staticdowngrade:
+                              "@type": type.googleapis.com/proxy.filters.http.static_downgrade.v2.ProtoRouteConfig
                               downgrade_rqx:
                                 headers:
                                   - name: reqeust_from
@@ -126,7 +126,7 @@ static_resources:
                                   inline_string: bodybodybodybodybodybody
                 http_filters:
                   - name: proxy.filters.http.staticdowngrade
-                  - name: envoy.router
+                  - name: envoy.filters.http.router
                     typed_config: {}
   clusters:
     - name: httpbin

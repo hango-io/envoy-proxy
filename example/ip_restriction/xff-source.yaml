@@ -24,8 +24,8 @@ static_resources:
                           route:
                             cluster: httpbin
                           typed_per_filter_config:
-                            com.netease.iprestriction:
-                              "@type": type.googleapis.com/netease.filters.http.iprestriction.v2.BlackOrWhiteList
+                            proxy.filters.http.iprestriction:
+                              "@type": type.googleapis.com/proxy.filters.http.iprestriction.v2.BlackOrWhiteList
                               # list用于指定IP列表支持普通ip和cidr
                               list:
                                 - "127.0.0.11"
@@ -42,8 +42,8 @@ static_resources:
                           route:
                             cluster: httpbin
                           typed_per_filter_config:
-                            com.netease.iprestriction:
-                              "@type": type.googleapis.com/netease.filters.http.iprestriction.v2.BlackOrWhiteList
+                            proxy.filters.http.iprestriction:
+                              "@type": type.googleapis.com/proxy.filters.http.iprestriction.v2.BlackOrWhiteList
                               # type字段用于指定名单类型：黑名单或者白名单，默认为黑名单
                               type: WHITE
                               list:
@@ -54,7 +54,7 @@ static_resources:
                 http_filters:
                   # 黑白名单全局配置，默认使用XFF中最后一个ip进行黑白名单限制
                   - name: proxy.filters.http.iprestriction
-                  - name: envoy.router
+                  - name: envoy.filters.http.router
                     typed_config: {}
   clusters:
     - name: httpbin
