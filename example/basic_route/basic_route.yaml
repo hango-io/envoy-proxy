@@ -57,7 +57,7 @@ static_resources:
                             host_redirect: "baidu.com"
                             path_redirect: "/path_after_redirect"
                 http_filters:
-                  - name: envoy.router
+                  - name: envoy.filters.http.router
                     typed_config: {}
   clusters:
     - name: httpbin
