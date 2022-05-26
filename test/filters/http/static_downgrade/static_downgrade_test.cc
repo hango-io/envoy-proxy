@@ -1,12 +1,10 @@
-#include "common/buffer/buffer_impl.h"
-#include "filters/http/well_known_names.h"
-#include "filters/http/static_downgrade/static_downgrade_filter.h"
-
-#include "test/test_common/utility.h"
+#include "source/common/buffer/buffer_impl.h"
+#include "source/filters/http/static_downgrade/static_downgrade_filter.h"
 
 #include "test/mocks/common.h"
 #include "test/mocks/server/mocks.h"
 #include "test/mocks/upstream/mocks.h"
+#include "test/test_common/utility.h"
 
 #include "fmt/format.h"
 #include "gmock/gmock.h"
@@ -62,8 +60,17 @@ public:
     proto_config_.mutable_static_response()->mutable_body()->set_filename("/tmp/downgrade.log");
   }
 
+  void initResponseFlags(const absl::string_view flags) {
+    proto_config_.mutable_response_flags()->set_value(std::string(flags));
+  }
+
+  void initResponseCodeDetails(const absl::string_view detail) {
+    proto_config_.mutable_response_code_details()->set_exact(std::string(detail));
+  }
+
   ProtoDowngradeConfig proto_config_;
   testing::StrictMock<Server::Configuration::MockServerFactoryContext> context_;
+  testing::NiceMock<StreamInfo::MockStreamInfo> mock_stream_info_;
 };
 
 TEST_F(StaticDowngradeConfigTest, NoDowngradeRpx) {
@@ -73,13 +80,13 @@ TEST_F(StaticDowngradeConfigTest, NoDowngradeRpx) {
 
   StaticDowngradeConfig config1(proto_config_, context_);
 
-  EXPECT_EQ(false, config1.shouldDowngrade(request_headers, response_headers));
+  EXPECT_EQ(false, config1.shouldDowngrade(request_headers, response_headers, mock_stream_info_));
 
   initDowngradeRpx();
 
   StaticDowngradeConfig config2(proto_config_, context_);
 
-  EXPECT_EQ(true, config2.shouldDowngrade(request_headers, response_headers));
+  EXPECT_EQ(true, config2.shouldDowngrade(request_headers, response_headers, mock_stream_info_));
 }
 
 TEST_F(StaticDowngradeConfigTest, RequestDisableDowngrade) {
@@ -91,12 +98,12 @@ TEST_F(StaticDowngradeConfigTest, RequestDisableDowngrade) {
   Http::TestRequestHeaderMapImpl request_headers;
   Http::TestResponseHeaderMapImpl response_headers{{"respfrom", "unittest"}};
 
-  EXPECT_EQ(false, config.shouldDowngrade(request_headers, response_headers));
+  EXPECT_EQ(false, config.shouldDowngrade(request_headers, response_headers, mock_stream_info_));
 
   request_headers.addCopy("comefrom", "unittest");
   request_headers.addCopy("should_downgrade", "sxxxxd");
 
-  EXPECT_EQ(true, config.shouldDowngrade(request_headers, response_headers));
+  EXPECT_EQ(true, config.shouldDowngrade(request_headers, response_headers, mock_stream_info_));
 }
 
 TEST_F(StaticDowngradeConfigTest, ResponseDisableDowngrade) {
@@ -109,11 +116,82 @@ TEST_F(StaticDowngradeConfigTest, ResponseDisableDowngrade) {
                                                  {"should_downgrade", "sxxxxd"}};
   Http::TestResponseHeaderMapImpl response_headers;
 
-  EXPECT_EQ(false, config.shouldDowngrade(request_headers, response_headers));
+  EXPECT_EQ(false, config.shouldDowngrade(request_headers, response_headers, mock_stream_info_));
 
   response_headers.addCopy("respfrom", "unittest");
 
-  EXPECT_EQ(true, config.shouldDowngrade(request_headers, response_headers));
+  EXPECT_EQ(true, config.shouldDowngrade(request_headers, response_headers, mock_stream_info_));
+}
+
+TEST_F(StaticDowngradeConfigTest, UnsupportedResponseFlag) {
+  initDowngradeRpx();
+  initResponseFlags("");
+
+  StaticDowngradeConfig config(proto_config_, context_);
+
+  initResponseFlags("xxxx");
+
+  EXPECT_THROW_WITH_MESSAGE(config = StaticDowngradeConfig(proto_config_, context_), EnvoyException,
+                            "Unsupported response flag: xxxx");
+}
+
+TEST_F(StaticDowngradeConfigTest, ResponseFlagsMatch) {
+  initDowngradeRpx();
+  initResponseFlags("UH");
+
+  StaticDowngradeConfig config(proto_config_, context_);
+
+  Http::TestRequestHeaderMapImpl request_headers;
+  Http::TestResponseHeaderMapImpl response_headers{{"respfrom", "unittest"}};
+
+  EXPECT_CALL(mock_stream_info_, responseFlags())
+      .WillRepeatedly(Return(StreamInfo::ResponseFlag::LocalReset));
+
+  EXPECT_EQ(false, config.shouldDowngrade(request_headers, response_headers, mock_stream_info_));
+
+  EXPECT_CALL(mock_stream_info_, responseFlags())
+      .WillRepeatedly(Return(StreamInfo::ResponseFlag::LocalReset |
+                             StreamInfo::ResponseFlag::NoHealthyUpstream));
+
+  EXPECT_EQ(true, config.shouldDowngrade(request_headers, response_headers, mock_stream_info_));
+
+  initResponseFlags("UH,NR");
+  StaticDowngradeConfig config_with_multiple_flag(proto_config_, context_);
+
+  EXPECT_CALL(mock_stream_info_, responseFlags())
+      .WillRepeatedly(Return(StreamInfo::ResponseFlag::LocalReset |
+                             StreamInfo::ResponseFlag::NoHealthyUpstream));
+
+  EXPECT_EQ(true, config_with_multiple_flag.shouldDowngrade(request_headers, response_headers,
+                                                            mock_stream_info_));
+
+  EXPECT_CALL(mock_stream_info_, responseFlags())
+      .WillRepeatedly(
+          Return(StreamInfo::ResponseFlag::LocalReset | StreamInfo::ResponseFlag::NoRouteFound));
+
+  EXPECT_EQ(true, config_with_multiple_flag.shouldDowngrade(request_headers, response_headers,
+                                                            mock_stream_info_));
+}
+
+TEST_F(StaticDowngradeConfigTest, ResponseCodeDetailsMatch) {
+  initDowngradeRpx();
+  initResponseCodeDetails("via unit test");
+
+  StaticDowngradeConfig config(proto_config_, context_);
+
+  Http::TestRequestHeaderMapImpl request_headers;
+  Http::TestResponseHeaderMapImpl response_headers{{"respfrom", "unittest"}};
+
+  auto test_detail_1 = absl::make_optional<std::string>("via failed");
+  auto test_detail_2 = absl::make_optional<std::string>("via unit test");
+
+  EXPECT_CALL(mock_stream_info_, responseCodeDetails()).WillOnce(ReturnRef(test_detail_1));
+
+  EXPECT_EQ(false, config.shouldDowngrade(request_headers, response_headers, mock_stream_info_));
+
+  EXPECT_CALL(mock_stream_info_, responseCodeDetails()).WillOnce(ReturnRef(test_detail_2));
+
+  EXPECT_EQ(true, config.shouldDowngrade(request_headers, response_headers, mock_stream_info_));
 }
 
 TEST_F(StaticDowngradeConfigTest, DowngradeStatus) {
@@ -197,6 +275,7 @@ public:
 
   ProtoRouteConfig proto_config_;
   testing::StrictMock<Server::Configuration::MockServerFactoryContext> context_;
+  testing::NiceMock<StreamInfo::MockStreamInfo> mock_stream_info_;
 };
 
 TEST_F(StaticDowngradeRouteConfigTest, NoMatchConfig) {
@@ -206,7 +285,7 @@ TEST_F(StaticDowngradeRouteConfigTest, NoMatchConfig) {
   Http::TestRequestHeaderMapImpl request_headers{{"comefrom", "xxxxxxxx"}};
   Http::TestResponseHeaderMapImpl response_headers{{"respfrom", "yyyyyyyy"}};
 
-  EXPECT_EQ(nullptr, config.downgradeConfig(request_headers, response_headers));
+  EXPECT_EQ(nullptr, config.downgradeConfig(request_headers, response_headers, mock_stream_info_));
 }
 
 TEST_F(StaticDowngradeRouteConfigTest, MatchFisrtConfig) {
@@ -217,7 +296,7 @@ TEST_F(StaticDowngradeRouteConfigTest, MatchFisrtConfig) {
   Http::TestResponseHeaderMapImpl response_headers{{"respfrom", "unittest"}};
 
   EXPECT_EQ(config.downgrade_configs_[0].get(),
-            config.downgradeConfig(request_headers, response_headers));
+            config.downgradeConfig(request_headers, response_headers, mock_stream_info_));
 }
 
 TEST_F(StaticDowngradeRouteConfigTest, MatchSecondConfig) {
@@ -228,7 +307,7 @@ TEST_F(StaticDowngradeRouteConfigTest, MatchSecondConfig) {
   Http::TestResponseHeaderMapImpl response_headers{{"respfrom", "unittest_specific"}};
 
   EXPECT_EQ(config.downgrade_configs_[1].get(),
-            config.downgradeConfig(request_headers, response_headers));
+            config.downgradeConfig(request_headers, response_headers, mock_stream_info_));
 }
 
 class HttpStaticDowngradeFilterTest : public testing::Test {
@@ -306,15 +385,8 @@ TEST_F(HttpStaticDowngradeFilterTest, NoFilterConfig) {
   initDowngradeProtoConfig();
   initFilterCallback();
 
-  ON_CALL(*encode_filter_callbacks_.route_, perFilterConfig(HttpFilterNames::get().StaticDowngrade))
-      .WillByDefault(Return(nullptr));
-
-  ON_CALL(encode_filter_callbacks_.route_->route_entry_,
-          perFilterConfig(HttpFilterNames::get().StaticDowngrade))
-      .WillByDefault(Return(nullptr));
-
-  ON_CALL(encode_filter_callbacks_.route_->route_entry_.virtual_host_,
-          perFilterConfig(HttpFilterNames::get().StaticDowngrade))
+  ON_CALL(*encode_filter_callbacks_.route_,
+          mostSpecificPerFilterConfig(HttpStaticDowngradeFilter::name()))
       .WillByDefault(Return(nullptr));
 
   filter_.decodeHeaders(request_headers_, true);
@@ -344,11 +416,8 @@ TEST_F(HttpStaticDowngradeFilterTest, NoDowngrade) {
 
   StaticDowngradeRouteConfig config(proto_config_, context_);
 
-  ON_CALL(*encode_filter_callbacks_.route_, perFilterConfig(HttpFilterNames::get().StaticDowngrade))
-      .WillByDefault(Return(&config));
-
-  ON_CALL(encode_filter_callbacks_.route_->route_entry_,
-          perFilterConfig(HttpFilterNames::get().StaticDowngrade))
+  ON_CALL(*encode_filter_callbacks_.route_,
+          mostSpecificPerFilterConfig(HttpStaticDowngradeFilter::name()))
       .WillByDefault(Return(&config));
 
   filter_.decodeHeaders(request_headers_, true);
@@ -373,11 +442,8 @@ TEST_F(HttpStaticDowngradeFilterTest, DowngradeComplete) {
 
   StaticDowngradeRouteConfig config(proto_config_, context_);
 
-  ON_CALL(*encode_filter_callbacks_.route_, perFilterConfig(HttpFilterNames::get().StaticDowngrade))
-      .WillByDefault(Return(&config));
-
-  ON_CALL(encode_filter_callbacks_.route_->route_entry_,
-          perFilterConfig(HttpFilterNames::get().StaticDowngrade))
+  ON_CALL(*encode_filter_callbacks_.route_,
+          mostSpecificPerFilterConfig(HttpStaticDowngradeFilter::name()))
       .WillByDefault(Return(&config));
 
   filter_.decodeHeaders(request_headers_, true);
@@ -399,11 +465,8 @@ TEST_F(HttpStaticDowngradeFilterTest, ReplaceBody) {
   EXPECT_CALL(context_, api()).WillOnce(ReturnRef(context_.api_));
   StaticDowngradeRouteConfig config(proto_config_, context_);
 
-  ON_CALL(*encode_filter_callbacks_.route_, perFilterConfig(HttpFilterNames::get().StaticDowngrade))
-      .WillByDefault(Return(&config));
-
-  ON_CALL(encode_filter_callbacks_.route_->route_entry_,
-          perFilterConfig(HttpFilterNames::get().StaticDowngrade))
+  ON_CALL(*encode_filter_callbacks_.route_,
+          mostSpecificPerFilterConfig(HttpStaticDowngradeFilter::name()))
       .WillByDefault(Return(&config));
 
   filter_.decodeHeaders(request_headers_, true);

@@ -1,12 +1,10 @@
-#include "common/buffer/buffer_impl.h"
-#include "filters/http/ip_restriction/ip_restriction.h"
-#include "filters/http/well_known_names.h"
-
-#include "test/test_common/utility.h"
+#include "source/common/buffer/buffer_impl.h"
+#include "source/filters/http/ip_restriction/ip_restriction.h"
 
 #include "test/mocks/common.h"
 #include "test/mocks/server/mocks.h"
 #include "test/mocks/upstream/mocks.h"
+#include "test/test_common/utility.h"
 
 #include "fmt/format.h"
 #include "gmock/gmock.h"
@@ -303,15 +301,8 @@ TEST_F(HttpIpRestrictionFilterTest, NoHttpRoute) {
 TEST_F(HttpIpRestrictionFilterTest, NoFilterConfig) {
   initIpRestrictionFilter("", false, {});
 
-  ON_CALL(*decode_filter_callbacks_.route_, perFilterConfig(HttpFilterNames::get().IpRestriction))
-      .WillByDefault(Return(nullptr));
-
-  ON_CALL(decode_filter_callbacks_.route_->route_entry_,
-          perFilterConfig(HttpFilterNames::get().IpRestriction))
-      .WillByDefault(Return(nullptr));
-
-  ON_CALL(decode_filter_callbacks_.route_->route_entry_.virtual_host_,
-          perFilterConfig(HttpFilterNames::get().IpRestriction))
+  ON_CALL(*decode_filter_callbacks_.route_,
+          mostSpecificPerFilterConfig(HttpIpRestrictionFilter::name()))
       .WillByDefault(Return(nullptr));
 
   auto status = filter_->decodeHeaders(request_headers_, true);
@@ -323,10 +314,8 @@ TEST_F(HttpIpRestrictionFilterTest, ForbiddenByBlackList) {
 
   initIpRestrictionFilter("", false, {"8.8.8.8"});
 
-  ON_CALL(*decode_filter_callbacks_.route_, perFilterConfig(HttpFilterNames::get().IpRestriction))
-      .WillByDefault(Return(route_config_.get()));
-  ON_CALL(decode_filter_callbacks_.route_->route_entry_,
-          perFilterConfig(HttpFilterNames::get().IpRestriction))
+  ON_CALL(*decode_filter_callbacks_.route_,
+          mostSpecificPerFilterConfig(HttpIpRestrictionFilter::name()))
       .WillByDefault(Return(route_config_.get()));
 
   EXPECT_CALL(decode_filter_callbacks_, streamInfo()).WillOnce(ReturnRef(stream_info_));
@@ -334,7 +323,7 @@ TEST_F(HttpIpRestrictionFilterTest, ForbiddenByBlackList) {
   Network::Address::InstanceConstSharedPtr address =
       std::make_shared<Network::Address::Ipv4Instance>("8.8.8.8");
 
-  stream_info_.downstream_address_provider_->setRemoteAddress(address);
+  stream_info_.downstream_connection_info_provider_->setRemoteAddress(address);
 
   auto status = filter_->decodeHeaders(request_headers_, true);
 
@@ -345,17 +334,15 @@ TEST_F(HttpIpRestrictionFilterTest, NotForbiddenByBlackList) {
 
   initIpRestrictionFilter("", false, {"8.8.8.8"});
 
-  ON_CALL(*decode_filter_callbacks_.route_, perFilterConfig(HttpFilterNames::get().IpRestriction))
-      .WillByDefault(Return(route_config_.get()));
-  ON_CALL(decode_filter_callbacks_.route_->route_entry_,
-          perFilterConfig(HttpFilterNames::get().IpRestriction))
+  ON_CALL(*decode_filter_callbacks_.route_,
+          mostSpecificPerFilterConfig(HttpIpRestrictionFilter::name()))
       .WillByDefault(Return(route_config_.get()));
 
   EXPECT_CALL(decode_filter_callbacks_, streamInfo()).WillOnce(ReturnRef(stream_info_));
 
   Network::Address::InstanceConstSharedPtr address =
       std::make_shared<Network::Address::Ipv4Instance>("8.8.8.9");
-  stream_info_.downstream_address_provider_->setRemoteAddress(address);
+  stream_info_.downstream_connection_info_provider_->setRemoteAddress(address);
 
   auto status = filter_->decodeHeaders(request_headers_, true);
 
@@ -366,17 +353,15 @@ TEST_F(HttpIpRestrictionFilterTest, ForbiddenByWhiteList) {
 
   initIpRestrictionFilter("", true, {"8.8.8.8"});
 
-  ON_CALL(*decode_filter_callbacks_.route_, perFilterConfig(HttpFilterNames::get().IpRestriction))
-      .WillByDefault(Return(route_config_.get()));
-  ON_CALL(decode_filter_callbacks_.route_->route_entry_,
-          perFilterConfig(HttpFilterNames::get().IpRestriction))
+  ON_CALL(*decode_filter_callbacks_.route_,
+          mostSpecificPerFilterConfig(HttpIpRestrictionFilter::name()))
       .WillByDefault(Return(route_config_.get()));
 
   EXPECT_CALL(decode_filter_callbacks_, streamInfo()).WillOnce(ReturnRef(stream_info_));
 
   Network::Address::InstanceConstSharedPtr address =
       std::make_shared<Network::Address::Ipv4Instance>("8.8.8.9");
-  stream_info_.downstream_address_provider_->setRemoteAddress(address);
+  stream_info_.downstream_connection_info_provider_->setRemoteAddress(address);
 
   auto status = filter_->decodeHeaders(request_headers_, true);
 
@@ -387,17 +372,15 @@ TEST_F(HttpIpRestrictionFilterTest, NotForbiddenByWhiteList) {
 
   initIpRestrictionFilter("", true, {"8.8.8.8"});
 
-  ON_CALL(*decode_filter_callbacks_.route_, perFilterConfig(HttpFilterNames::get().IpRestriction))
-      .WillByDefault(Return(route_config_.get()));
-  ON_CALL(decode_filter_callbacks_.route_->route_entry_,
-          perFilterConfig(HttpFilterNames::get().IpRestriction))
+  ON_CALL(*decode_filter_callbacks_.route_,
+          mostSpecificPerFilterConfig(HttpIpRestrictionFilter::name()))
       .WillByDefault(Return(route_config_.get()));
 
   EXPECT_CALL(decode_filter_callbacks_, streamInfo()).WillOnce(ReturnRef(stream_info_));
 
   Network::Address::InstanceConstSharedPtr address =
       std::make_shared<Network::Address::Ipv4Instance>("8.8.8.8");
-  stream_info_.downstream_address_provider_->setRemoteAddress(address);
+  stream_info_.downstream_connection_info_provider_->setRemoteAddress(address);
 
   auto status = filter_->decodeHeaders(request_headers_, true);
 
@@ -408,10 +391,8 @@ TEST_F(HttpIpRestrictionFilterTest, IpSourceHeader) {
 
   initIpRestrictionFilter("x-real-ip", false, {"8.8.8.8"});
 
-  ON_CALL(*decode_filter_callbacks_.route_, perFilterConfig(HttpFilterNames::get().IpRestriction))
-      .WillByDefault(Return(route_config_.get()));
-  ON_CALL(decode_filter_callbacks_.route_->route_entry_,
-          perFilterConfig(HttpFilterNames::get().IpRestriction))
+  ON_CALL(*decode_filter_callbacks_.route_,
+          mostSpecificPerFilterConfig(HttpIpRestrictionFilter::name()))
       .WillByDefault(Return(route_config_.get()));
 
   auto status = filter_->decodeHeaders(request_headers_, true);

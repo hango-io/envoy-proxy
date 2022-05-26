@@ -1,13 +1,16 @@
 #pragma once
 
-#include "api/proxy/filters/http/static_downgrade/v2/static_downgrade.pb.h"
-#include "source/common/http/header_utility.h"
+#include <string>
+
 #include "envoy/http/filter.h"
 #include "envoy/server/filter_config.h"
+#include "envoy/stream_info/stream_info.h"
 
+#include "source/common/common/matchers.h"
+#include "source/common/http/header_utility.h"
 #include "source/extensions/filters/http/common/pass_through_filter.h"
 
-#include <string>
+#include "api/proxy/filters/http/static_downgrade/v2/static_downgrade.pb.h"
 
 namespace Envoy {
 namespace Proxy {
@@ -23,10 +26,15 @@ public:
   StaticDowngradeConfig(const ProtoDowngradeConfig& config,
                         Server::Configuration::ServerFactoryContext& context);
 
-  bool shouldDowngrade(Http::HeaderMap& rqx, Http::HeaderMap& rpx) const;
+  bool shouldDowngrade(Http::HeaderMap& rqx, Http::HeaderMap& rpx,
+                       const StreamInfo::StreamInfo& info) const;
 
   std::vector<Http::HeaderUtility::HeaderDataPtr> downgrade_rqx_;
   std::vector<Http::HeaderUtility::HeaderDataPtr> downgrade_rpx_;
+
+  absl::optional<uint64_t> response_flags_;
+  std::unique_ptr<Matchers::StringMatcherImpl<envoy::type::matcher::v3::StringMatcher>>
+      response_code_details_matcher_;
 
   uint32_t static_http_status_{200};
   std::map<Http::LowerCaseString, std::string> static_http_headers_;
@@ -41,7 +49,8 @@ public:
   StaticDowngradeRouteConfig(const ProtoRouteConfig& config,
                              Server::Configuration::ServerFactoryContext& context);
 
-  const StaticDowngradeConfig* downgradeConfig(Http::HeaderMap& rqx, Http::HeaderMap& rpx) const;
+  const StaticDowngradeConfig* downgradeConfig(Http::HeaderMap& rqx, Http::HeaderMap& rpx,
+                                               const StreamInfo::StreamInfo& info) const;
 
   std::vector<StaticDowngradeConfigPtr> downgrade_configs_;
 };

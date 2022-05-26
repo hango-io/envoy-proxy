@@ -1,4 +1,5 @@
-#include "common/http/proxy_base.h"
+#include "source/common/http/proxy_base.h"
+
 #include "gtest/gtest.h"
 
 namespace Envoy {

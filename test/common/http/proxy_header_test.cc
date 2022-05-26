@@ -1,7 +1,8 @@
-#include "common/http/proxy_header.h"
+#include "source/common/http/header_map_impl.h"
+#include "source/common/http/headers.h"
+#include "source/common/http/proxy_header.h"
+
 #include "gtest/gtest.h"
-#include "common/http/headers.h"
-#include "common/http/header_map_impl.h"
 
 namespace Envoy {
 namespace Proxy {
