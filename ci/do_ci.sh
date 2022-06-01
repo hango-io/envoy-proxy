@@ -5,7 +5,7 @@
 set -e
 
 ISTIO_REPOSITORY_URL=${ISTIO_REPOSITORY_URL:-"git@github.com:istio/istio.git"}
-ISTIO_REPOSITORY_COM=${ISTIO_REPOSITORY_COM:-"2dd7b6207f02cec8b42f4263ac197434f4ec9b4a"}
+ISTIO_REPOSITORY_COM=${ISTIO_REPOSITORY_COM:-"e1fcf594098e187be31614bfd2b0075a15f34f29"}
 
 VERSION=$(git describe --tags --always --dirty)
 COMMIT=$(git rev-parse --short HEAD)
