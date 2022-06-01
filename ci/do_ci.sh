@@ -47,7 +47,7 @@ function go_path_if_not_present() {
         if [[ $(arch) == "aarch64" ]]; then
             ENVOY_ARCH="arm64"
         fi
-        GOLANG_PKG=go1.15.5.linux-${ENVOY_ARCH}.tar.gz
+        GOLANG_PKG=go1.17.5.linux-${ENVOY_ARCH}.tar.gz
         echo "downloading ${GOLANG_PKG}"
         wget https://dl.google.com/go/$GOLANG_PKG -P ${TOOLS_PATH}
         tar -zxvf ${TOOLS_PATH}/$GOLANG_PKG -C ${TOOLS_PATH}
