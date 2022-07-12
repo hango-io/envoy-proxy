@@ -2,16 +2,16 @@
 
 set -e
 
-# If the rider or agent is updated, please update this BASE_IMAGE_TAG to create new base image.
-BASE_IMAGE_TAG="v1.0.0"
-
-BASE_IMAGE_HUB=${ENVOY_BUILD_BASE_IMAGE:-"hangoio/envoy-runtime-base"}
-
 AGENT_REPOSITORY_URL=${ISTIO_REPOSITORY_URL:-"git@github.com:istio/istio.git"}
 AGENT_REPOSITORY_COM=${ISTIO_REPOSITORY_COM:-"e1fcf594098e187be31614bfd2b0075a15f34f29"}
 
 RIDER_REPOSITORY_URL=${RIDER_REPOSITORY_URL:-"git@github.com:hango-io/rider.git"}
 RIDER_REPOSITORY_COM=${RIDER_REPOSITORY_COM:-"c3acab3e9a150ad2b80aa171831dc2f81b659215"}
+
+# Set base image tag with versions of agent/rider automatically.
+BASE_IMAGE_TAG=${AGENT_REPOSITORY_COM:0:10}-${RIDER_REPOSITORY_COM:0:10}
+
+BASE_IMAGE_HUB=${ENVOY_BUILD_BASE_IMAGE:-"hangoio/envoy-runtime-base"}
 
 CI_PIPELINE=${CI_PIPELINE:-"false"}
 
