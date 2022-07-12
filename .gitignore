@@ -1,7 +1,6 @@
 bazel-*
 generated
-envoy.stripped
-.vscode/
+.vscode
 *.pyc
 .config
 cscope*
@@ -12,3 +11,5 @@ additional_distfiles
 .clang*
 compile_commands.json
 source/extensions.bzl
+linux
+.idea

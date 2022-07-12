@@ -1,15 +1,15 @@
-#include "common/redis/client.h"
+#include "source/common/redis/client.h"
 
 #include "envoy/common/exception.h"
 
-#include "common/common/utility.h"
+#include "source/common/common/utility.h"
 
 namespace Envoy {
 namespace Proxy {
 namespace Common {
 namespace Redis {
 
-RedisClient::RedisClient(const ClientOptions &options) : options_(options) {
+RedisClient::RedisClient(const ClientOptions& options) : options_(options) {
   try {
     connectToGeneral();
   } catch (const sw::redis::Error& e) {
@@ -17,12 +17,12 @@ RedisClient::RedisClient(const ClientOptions &options) : options_(options) {
   }
 }
 
-void RedisClient::parseRedisNodes(const std::string &src, NodeList &dst) {
+void RedisClient::parseRedisNodes(const std::string& src, NodeList& dst) {
   if (!src.length()) {
-    return;    
+    return;
   }
 
-  auto nodes =  StringUtil::splitToken(src, ",", false);
+  auto nodes = StringUtil::splitToken(src, ",", false);
   for (const auto& i : nodes) {
     auto parts = StringUtil::splitToken(i, ":", false);
     if (parts.size() == 2) {
@@ -66,11 +66,11 @@ void RedisClient::connectToGeneral() {
   client_ = std::make_unique<sw::redis::Redis>(opts, pool_options);
 }
 
-void RedisClient::command(const std::vector<std::string> &args) {
+void RedisClient::command(const std::vector<std::string>& args) {
   client_->command(args.begin(), args.end());
 }
 
-} // namespace Redis 
+} // namespace Redis
 } // namespace Common
 } // namespace Proxy
 } // namespace Envoy

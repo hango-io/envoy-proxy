@@ -1,9 +1,10 @@
 #pragma once
 
-#include "common/http/header_map_impl.h"
 #include "envoy/http/message.h"
-#include "common/http/message_impl.h"
-#include "common/http/headers.h"
+
+#include "source/common/http/header_map_impl.h"
+#include "source/common/http/headers.h"
+#include "source/common/http/message_impl.h"
 
 namespace Envoy {
 namespace Proxy {

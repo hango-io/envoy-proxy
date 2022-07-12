@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package proxy.filters.http.circuit_breaker.v2;
+
+option java_package = "proxy.filters.http.circuit_breaker.v2";
+option java_outer_classname = "CircuitBreakerProto";
+option java_multiple_files = true;
+
+import "envoy/type/percent.proto";
+import "google/protobuf/duration.proto";
+import "validate/validate.proto";
+import "envoy/config/core/v3/base.proto";
+
+message CircuitBreaker {
+}
+
+message CircuitBreakerPerRoute {
+  message CircuitBreakerResponse {
+    uint32 http_status = 1 [(validate.rules).uint32 = {gte: 200, lt: 600}];
+    repeated envoy.config.core.v3.HeaderValue headers = 2;
+    envoy.config.core.v3.DataSource body = 3;
+  }
+
+  google.protobuf.Duration average_response_time = 1;
+  uint32 consecutive_slow_requests = 2;
+
+  envoy.type.Percent error_percent_threshold = 3;
+  uint32 min_request_amount = 4;
+
+  CircuitBreakerResponse response = 5 [(validate.rules).message.required = true];
+
+  google.protobuf.Duration break_duration = 6 [(validate.rules).duration.required = true];
+  google.protobuf.Duration lookback_duration = 7 [(validate.rules).duration = {lt {seconds: 3600}}];
+
+  bool wait_body = 8;
+}

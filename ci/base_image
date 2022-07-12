@@ -1,0 +1,93 @@
+#! /bin/bash
+
+set -e
+
+# If the rider or agent is updated, please update this BASE_IMAGE_TAG to create new base image.
+BASE_IMAGE_TAG="v1.0.0"
+
+BASE_IMAGE_HUB=${ENVOY_BUILD_BASE_IMAGE:-"hangoio/envoy-runtime-base"}
+
+AGENT_REPOSITORY_URL=${ISTIO_REPOSITORY_URL:-"git@github.com:istio/istio.git"}
+AGENT_REPOSITORY_COM=${ISTIO_REPOSITORY_COM:-"e1fcf594098e187be31614bfd2b0075a15f34f29"}
+
+RIDER_REPOSITORY_URL=${RIDER_REPOSITORY_URL:-"git@github.com:hango-io/rider.git"}
+RIDER_REPOSITORY_COM=${RIDER_REPOSITORY_COM:-"c3acab3e9a150ad2b80aa171831dc2f81b659215"}
+
+CI_PIPELINE=${CI_PIPELINE:-"false"}
+
+if [[ $(arch) == "aarch64" ]]; then
+    BUILD_BINARY_ARCH="arm64"
+else
+    BUILD_BINARY_ARCH="amd64"
+fi
+
+# Get agent.
+function get_agent_source() {
+    pushd "${IMAGE_BUILD_PATH}"
+
+    git clone "${AGENT_REPOSITORY_URL}"
+    pushd istio
+    git checkout "${AGENT_REPOSITORY_COM}" && git submodule update --init
+
+    popd
+    popd
+
+    # TODO(wangbaiping): copy the bootstrap file from the agent source directly.
+    cp ci/packaging/envoy_bootstrap_tmpl.json "${IMAGE_BUILD_PATH}"
+}
+
+# Get rider.
+function get_rider_source() {
+    pushd "${IMAGE_BUILD_PATH}"
+
+    git clone "${RIDER_REPOSITORY_URL}"
+
+    pushd rider
+
+    git checkout "${RIDER_REPOSITORY_COM}" && git submodule update --init
+
+    popd
+    popd
+}
+
+function build_base_image() {
+    local IMAGE_BUILD_PATH
+    IMAGE_BUILD_PATH=$(pwd)/generated/base_image/${BUILD_BINARY_ARCH}
+    mkdir -p "${IMAGE_BUILD_PATH}"
+    rm -rf "${IMAGE_BUILD_PATH:?}"/*
+
+    get_agent_source
+    get_rider_source
+
+    cp ci/base_image.Dockerfile "${IMAGE_BUILD_PATH}"/Dockerfile
+
+    pushd "${IMAGE_BUILD_PATH}"
+
+    local IMAGE_NAME
+    IMAGE_NAME="${BASE_IMAGE_HUB}":"${BASE_IMAGE_TAG}"-"${BUILD_BINARY_ARCH}"
+
+    export DOCKER_CLI_EXPERIMENTAL=enabled
+    docker build --build-arg build_binary_arch=${BUILD_BINARY_ARCH} \
+        -t "${IMAGE_NAME}" .
+    docker push "${IMAGE_NAME}"
+
+    # Clean up image in ci pipeline.
+    if [[ ${CI_PIPELINE} == "true" ]]; then
+        docker image rm "${FINAL_IMAGE_NAME}"
+    fi
+
+    popd
+}
+
+if [[ $# -lt 1 ]]; then
+    IMAGE_NAME="${BASE_IMAGE_HUB}":"${BASE_IMAGE_TAG}"-${BUILD_BINARY_ARCH}
+    echo "${IMAGE_NAME}"
+    exit 0
+fi
+
+if [[ $1 != "build_base_image" ]]; then
+    echo "Please confirm your action by set first argument to 'build_base_image'"
+    exit 1
+fi
+
+build_base_image

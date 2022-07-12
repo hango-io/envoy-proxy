@@ -1,18 +1,16 @@
-#include "hiredis/hiredis.h"
-#include "hiredis/async.h"
-#include "hiredis/adapters/libevent.h"
-
-// 对于 C++ 17 及以上版本，应当使用 std::optional 来替代
-#include "absl/types/optional.h"
-#include "absl/strings/string_view.h"
-
 #include <chrono>
-#include <string>
-#include <vector>
 #include <functional>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
-#include "common/common/logger.h"
+#include "source/common/common/logger.h"
+
+#include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
+#include "hiredis/adapters/libevent.h"
+#include "hiredis/async.h"
+#include "hiredis/hiredis.h"
 
 namespace Envoy {
 namespace Proxy {

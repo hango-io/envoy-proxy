@@ -7,9 +7,29 @@ option java_outer_classname = "Common";
 option java_multiple_files = true;
 
 import "envoy/config/route/v3/route_components.proto";
+import "envoy/type/matcher/v3/string.proto";
 
 import "validate/validate.proto";
 
+message CookieMatcher {
+  string name = 1 [(validate.rules).string = {min_len: 1 max_len: 128}];
+
+  oneof cookie_match_specifier {
+    // Specifies whether a cookie value should match against a string.
+    envoy.type.matcher.v3.StringMatcher string_match = 2
+        [(validate.rules).message = {required: true}];
+
+    // Specifies whether a cookie should be present.
+    bool present_match = 3;
+  }
+}
+
 message CommonMatcher {
+  envoy.type.matcher.v3.StringMatcher path = 4;
+
   repeated envoy.config.route.v3.HeaderMatcher headers = 1;
+
+  repeated envoy.config.route.v3.QueryParameterMatcher parameters = 2;
+
+  repeated CookieMatcher cookies = 3;
 }

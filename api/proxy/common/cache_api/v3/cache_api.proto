@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package proxy.common.cache_api.v3;
+
+option java_package = "proxy.common.cache_api.v3";
+option java_outer_classname = "CacheApi";
+option java_multiple_files = true;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+
+import "validate/validate.proto";
+
+message Cache {
+  oneof cache_type {
+    LocalCacheImpl local = 4;
+    RedisCacheImpl redis = 5;
+  }
+}
+
+// RedisHttpCache
+message RedisCacheImpl {
+  message Node {
+    string host = 1 [(validate.rules).string.min_len = 1];
+    google.protobuf.UInt64Value port = 2;
+  }
+  message Cluster {
+    repeated Node nodes = 1 [(validate.rules).repeated .min_items = 1];
+  }
+
+  message General {
+    string host = 1 [(validate.rules).string.min_len = 1];
+    google.protobuf.UInt64Value port = 2;
+  }
+
+  message Sentinel {
+    repeated Node nodes = 1 [(validate.rules).repeated .min_items = 1];
+    string master = 2;
+    string password = 3;
+  }
+
+  message Pipeline {
+    google.protobuf.UInt64Value max_size = 1;
+    google.protobuf.UInt64Value interval = 2;
+  }
+
+  oneof redis_type {
+    Cluster cluster = 1;
+    Sentinel sentinel = 8;
+    General general = 2;
+  }
+
+  google.protobuf.UInt64Value timeout = 3;
+  string password = 4;
+  google.protobuf.UInt64Value database = 5;
+  google.protobuf.UInt64Value poolsize = 6;
+  // make no sense now
+  google.protobuf.UInt64Value idletime = 7;
+
+  Pipeline pipeline = 9;
+}
+
+// LocalHttpCache
+message LocalCacheImpl {
+  google.protobuf.UInt64Value max_cache_size = 1;
+}
+
+// TTL 和 KeyMaker 一般用于路由粒度配置
+message CacheTTL {
+  uint64 default = 1;
+  // regex : uint64
+  map<string, uint64> customs = 2;
+}
+
+message HttpCacheKeyMaker {
+  // Exclude request path and request method when calculating the HTTP request cache key.
+  bool exclude_path = 1;
+
+  bool exclude_host = 2;
+
+  repeated string query_params = 3;
+
+  repeated string headers_keys = 6;
+
+  bool ignore_case = 7;
+}
