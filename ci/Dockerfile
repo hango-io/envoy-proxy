@@ -1,11 +1,8 @@
 ARG envoy_build_base_image=ubuntu:18.04
 FROM ${envoy_build_base_image}
-
-WORKDIR /usr/local/bin
-
 # Add some binaries to image.
-ADD envoy entrypoint.sh ./
-RUN ln -s ./envoy ./envoy-link
+ADD envoy entrypoint.sh /usr/local/bin/
+RUN ln -s /usr/local/bin/envoy /usr/local/bin/envoy-link
 
 # Log rotate config template.
 ADD logrotate.conf /etc/envoy/logrotate.conf
