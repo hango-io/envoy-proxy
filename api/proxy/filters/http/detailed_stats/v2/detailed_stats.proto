@@ -1,0 +1,49 @@
+
+syntax = "proto3";
+
+package proxy.filters.http.detailed_stats.v2;
+
+option java_package = "proxy.filters.http.detailed_stats.v2";
+option java_outer_classname = "DetailedStatsProto";
+option java_multiple_files = true;
+
+import "api/proxy/common/matcher/v3/matcher.proto";
+
+import "validate/validate.proto";
+
+// message StatNameSegment {
+//     // Value of segment of stat name. The segment value will be used to form a stat's
+//     // full name as part of the stat's unique identity.
+//     string segment = 1 [(validate.rules).string.min_len = 1];
+//     // Optional segment annotation. If this is set then the annotation value will be
+//     // used as tag name and the segment value will be used as tag value when try to
+//     // comsume the stats with prometheus format.
+//     string annotation = 2;
+// }
+
+message StatNameTag {
+  // Tag key.
+  string key = 1 [(validate.rules).string.min_len = 1];
+  // Tag val.
+  string val = 2 [(validate.rules).string.min_len = 1];
+}
+
+// Config this in metedata with namespace `proxy.metadata_stats.detailed_stats`.
+// Used to create detailed stats for the any object that has typed metadata support.
+message PrefixedStatTags {
+  string stat_prefix = 1 [(validate.rules).string.min_len = 1];
+
+  repeated StatNameTag stat_tags = 2 [(validate.rules).repeated .min_items = 1];
+}
+
+message MatchedStatName {
+  proxy.common.matcher.v3.CommonMatcher matcher = 1 [(validate.rules).message.required = true];
+
+  repeated StatNameTag stat_tags = 2 [(validate.rules).repeated .min_items = 1];
+}
+
+message ProtoCommonConfig {
+  repeated MatchedStatName matched_stats = 1;
+
+  repeated string custom_stat_namespaces = 2;
+}
