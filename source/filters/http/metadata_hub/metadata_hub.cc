@@ -35,7 +35,7 @@ void MetadataHubCommonConfig::handleDecodeHeaders(Http::LowerCaseString&& name,
   decode_headers_to_state_.push_back(
       {std::move(rename), [n = std::move(name)](Http::RequestHeaderMap& h) -> absl::string_view {
          auto result = h.get(n);
-         return result.empty() ? result[0]->value().getStringView() : "";
+         return !result.empty() ? result[0]->value().getStringView() : "";
        }});
 }
 
@@ -45,7 +45,7 @@ void MetadataHubCommonConfig::handleEncodeHeaders(Http::LowerCaseString&& name,
   encode_headers_to_state_.push_back(
       {std::move(rename), [n = std::move(name)](Http::ResponseHeaderMap& h) -> absl::string_view {
          auto result = h.get(n);
-         return result.empty() ? result[0]->value().getStringView() : "";
+         return !result.empty() ? result[0]->value().getStringView() : "";
        }});
 }
 

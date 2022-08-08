@@ -13,8 +13,6 @@
 #include "envoy/stats/scope.h"
 #include "envoy/stats/stats_macros.h"
 
-#include "source/common/buffer/watermark_buffer.h"
-#include "source/common/common/token_bucket_impl.h"
 #include "source/common/filter_state/plain_state.h"
 #include "source/common/metadata/typed_metadata.h"
 #include "source/extensions/filters/http/common/pass_through_filter.h"
