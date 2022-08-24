@@ -65,11 +65,12 @@ typedef ConstSingleton<PluginExportFunctionNameValues> PluginExportFunctionNames
 
 class PluginHandle : public ThreadLocal::ThreadLocalObject {
 public:
-  PluginHandle(std::shared_ptr<LuaVirtualMachine> vm, std::shared_ptr<Plugin> plugin);
+  PluginHandle(std::shared_ptr<LuaVirtualMachine> vm, std::shared_ptr<Plugin> plugin,
+               std::shared_ptr<ContextBase> context_base);
 
   ~PluginHandle();
 
-  LuaVirtualMachine* vm() { return vm_.get(); }
+  std::shared_ptr<LuaVirtualMachine> vm() { return vm_; }
 
   const Plugin* plugin() const { return plugin_.get(); }
 
@@ -87,6 +88,7 @@ public:
 private:
   std::shared_ptr<LuaVirtualMachine> vm_;
   std::shared_ptr<Plugin> plugin_;
+  std::shared_ptr<ContextBase> context_base_;
 
   int on_configure_ref_{LUA_NOREF};
   int on_request_ref_{LUA_NOREF};
@@ -118,10 +120,10 @@ public:
   ContextBase() {}
 
   // Root Context
-  ContextBase(LuaVirtualMachine* vm, PluginSharedPtr plugin);
+  ContextBase(std::shared_ptr<LuaVirtualMachine> vm, PluginSharedPtr plugin);
 
   // Stream Context
-  ContextBase(Filter* filter, LuaVirtualMachine* vm, PluginSharedPtr plugin);
+  ContextBase(Filter* filter, std::shared_ptr<LuaVirtualMachine> vm, PluginSharedPtr plugin);
 
   // RootInterface
   void onConfigure(PluginHandle& plugin_handle) override;
@@ -249,7 +251,7 @@ public:
   }
 
 private:
-  LuaVirtualMachine* vm_{};
+  std::shared_ptr<LuaVirtualMachine> vm_;
   std::shared_ptr<Plugin> plugin_;
 };
 

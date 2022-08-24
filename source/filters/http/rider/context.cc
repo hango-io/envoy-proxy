@@ -7,8 +7,9 @@ namespace Proxy {
 namespace HttpFilters {
 namespace Rider {
 
-PluginHandle::PluginHandle(std::shared_ptr<LuaVirtualMachine> vm, std::shared_ptr<Plugin> plugin)
-    : vm_(vm), plugin_(plugin) {}
+PluginHandle::PluginHandle(std::shared_ptr<LuaVirtualMachine> vm, std::shared_ptr<Plugin> plugin,
+                           std::shared_ptr<ContextBase> context_base)
+    : vm_(vm), plugin_(plugin), context_base_(context_base) {}
 
 PluginHandle::~PluginHandle() {
   if (!vm_.get()) {
@@ -27,11 +28,13 @@ PluginHandle::~PluginHandle() {
   }
 }
 
-ContextBase::ContextBase(LuaVirtualMachine* vm, PluginSharedPtr plugin) : vm_(vm), plugin_(plugin) {
+ContextBase::ContextBase(std::shared_ptr<LuaVirtualMachine> vm, PluginSharedPtr plugin)
+    : vm_(vm), plugin_(plugin) {
   LuaUtils::setContext(vm->luaState(), this);
 }
 
-ContextBase::ContextBase(Filter* filter, LuaVirtualMachine* vm, PluginSharedPtr plugin)
+ContextBase::ContextBase(Filter* filter, std::shared_ptr<LuaVirtualMachine> vm,
+                         PluginSharedPtr plugin)
     : vm_(vm), plugin_(plugin) {
   LuaUtils::setContext(vm->luaState(), dynamic_cast<ContextBase*>(filter));
 }

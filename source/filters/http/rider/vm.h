@@ -46,7 +46,6 @@ private:
 
   const std::string vm_id_;
   CSmartPtr<lua_State, lua_close> state_;
-  std::unordered_map<std::string, std::unique_ptr<ContextBase>> root_contexts_;
 };
 
 using LuaVirtualMachineSharedPtr = std::shared_ptr<LuaVirtualMachine>;
@@ -55,7 +54,8 @@ class LuaThread : public LuaVirtualMachine {
 public:
   LuaThread(LuaVirtualMachineSharedPtr parent);
 
-  PluginHandleSharedPtr startPlugin(PluginSharedPtr plugin) override;
+  PluginHandleSharedPtr startPluginHandle(PluginSharedPtr plugin,
+                                          std::shared_ptr<ContextBase> context_base);
 
   std::unique_ptr<Coroutine> createCoroutine() override;
 

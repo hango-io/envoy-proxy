@@ -78,13 +78,12 @@ LuaVirtualMachine::LuaVirtualMachine(const std::string& vm_id, const std::string
 
 PluginHandleSharedPtr LuaVirtualMachine::startPlugin(PluginSharedPtr plugin) {
   auto lua_thread = std::make_shared<LuaThread>(this->shared_from_this());
-  // TODO(Tong Cai): check emplace result.
-  auto it = root_contexts_.emplace(plugin->key(),
-                                   std::make_unique<ContextBase>(lua_thread.get(), plugin));
 
-  auto plugin_handle = lua_thread->startPlugin(plugin);
+  auto context_base = std::make_shared<ContextBase>(lua_thread, plugin);
 
-  it.first->second->onConfigure(*plugin_handle);
+  auto plugin_handle = lua_thread->startPluginHandle(plugin, context_base);
+
+  context_base->onConfigure(*plugin_handle);
   return plugin_handle;
 }
 
@@ -99,8 +98,10 @@ LuaThread::LuaThread(LuaVirtualMachineSharedPtr parent) : parent_(parent) {
   LuaUtils::setupSandbox(new_state);
 }
 
-PluginHandleSharedPtr LuaThread::startPlugin(PluginSharedPtr plugin) {
-  auto plugin_handle = std::make_shared<PluginHandle>(this->shared_from_this(), plugin);
+PluginHandleSharedPtr LuaThread::startPluginHandle(PluginSharedPtr plugin,
+                                                   std::shared_ptr<ContextBase> context_base) {
+  auto plugin_handle =
+      std::make_shared<PluginHandle>(this->shared_from_this(), plugin, context_base);
   lua_State* state = luaState();
 
   int rc = luaL_dostring(state, plugin->code().c_str());
