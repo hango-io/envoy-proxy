@@ -40,13 +40,12 @@ Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap& headers,
     common_list = &config_->config_.list_;
   }
 
-  auto path_with_query = headers.getPathValue();
-  Http::Utility::QueryParams parameter = Http::Utility::parseQueryString(path_with_query);
+  Common::Http::HttpCommonMatcherContext context(headers);
 
   bool denied = false;
   if (route_config_) {
     for (const auto& list_item : *route_list) {
-      if (list_item->match(headers, parameter)) {
+      if (list_item->match(context)) {
         if (is_white_list) {
           return Http::FilterHeadersStatus::Continue;
         } else {
@@ -58,7 +57,7 @@ Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap& headers,
   }
   if (!denied && !override_common) {
     for (const auto& list_item : *common_list) {
-      if (list_item->match(headers, parameter)) {
+      if (list_item->match(context)) {
         if (is_white_list) {
           return Http::FilterHeadersStatus::Continue;
         } else {

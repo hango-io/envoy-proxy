@@ -10,6 +10,42 @@ namespace Proxy {
 namespace Common {
 namespace Http {
 
+absl::string_view HttpCommonMatcherContext::getPath() const {
+  if (path_.empty()) {
+    const auto typed_headers = dynamic_cast<const Envoy::Http::RequestHeaderMap*>(&headers_);
+    if (typed_headers != nullptr) {
+      absl::string_view path_with_query = typed_headers->getPathValue();
+      path_ = Envoy::Http::PathUtil::removeQueryAndFragment(path_with_query);
+    }
+  }
+  return path_;
+}
+
+const Envoy::Http::Utility::QueryParams& HttpCommonMatcherContext::getQueryParams() const {
+  if (!parameters_.has_value()) {
+    const auto typed_headers = dynamic_cast<const Envoy::Http::RequestHeaderMap*>(&headers_);
+    if (typed_headers != nullptr) {
+      auto path_with_query = typed_headers->getPathValue();
+      parameters_ = Envoy::Http::Utility::parseQueryString(path_with_query);
+    } else {
+      parameters_.emplace(Envoy::Http::Utility::QueryParams{});
+    }
+  }
+  return parameters_.value();
+}
+
+const CookiesMap& HttpCommonMatcherContext::getCookies() const {
+  if (!cookies_.has_value()) {
+    const auto typed_headers = static_cast<const Envoy::Http::RequestHeaderMap*>(&headers_);
+    if (typed_headers != nullptr) {
+      cookies_ = Envoy::Http::Utility::parseCookies(*typed_headers);
+    } else {
+      cookies_.emplace(CookiesMap{});
+    }
+  }
+  return cookies_.value();
+}
+
 namespace {
 
 using ProtoHeadersMatcher = Protobuf::RepeatedPtrField<envoy::config::route::v3::HeaderMatcher>;
@@ -21,16 +57,8 @@ class PathMatcher : public Matcher {
 public:
   PathMatcher(const envoy::type::matcher::v3::StringMatcher& matcher) : matcher_(matcher) {}
 
-  bool match(const Envoy::Http::HeaderMap& headers,
-             const Envoy::Http::Utility::QueryParams&) const override {
-    ASSERT(dynamic_cast<const Envoy::Http::RequestHeaderMap*>(&headers) != nullptr);
-
-    const auto typed_headers = static_cast<const Envoy::Http::RequestHeaderMap*>(&headers);
-
-    absl::string_view path_with_query = typed_headers->getPathValue();
-
-    absl::string_view path = Envoy::Http::PathUtil::removeQueryAndFragment(path_with_query);
-    return matcher_.match(path);
+  bool match(const HttpCommonMatcherContext& context) const override {
+    return matcher_.match(context.getPath());
   }
 
 private:
@@ -46,9 +74,8 @@ public:
     }
   }
 
-  bool match(const Envoy::Http::HeaderMap& headers,
-             const Envoy::Http::Utility::QueryParams&) const override {
-    return Envoy::Http::HeaderUtility::matchHeaders(headers, headers_matcher_);
+  bool match(const HttpCommonMatcherContext& context) const override {
+    return Envoy::Http::HeaderUtility::matchHeaders(context.getHeaders(), headers_matcher_);
   }
 
 private:
@@ -64,9 +91,9 @@ public:
     }
   }
 
-  bool match(const Envoy::Http::HeaderMap&,
-             const Envoy::Http::Utility::QueryParams& params) const override {
-    return Envoy::Router::ConfigUtility::matchQueryParams(params, parameters_matcher_);
+  bool match(const HttpCommonMatcherContext& context) const override {
+    return Envoy::Router::ConfigUtility::matchQueryParams(context.getQueryParams(),
+                                                          parameters_matcher_);
   }
 
 private:
@@ -87,17 +114,21 @@ public:
     }
   }
 
-  bool match(const Envoy::Http::HeaderMap& headers,
-             const Envoy::Http::Utility::QueryParams&) const override {
+  bool match(const HttpCommonMatcherContext& context) const override {
+    CookiesMap request_cookies = context.getCookies();
     for (const auto& cookie : cookies_matcher_) {
-      auto value = Envoy::Http::Utility::parseCookieValue(headers, cookie.first);
+      bool find_key = false;
+      if (request_cookies.find(cookie.first) != request_cookies.end()) {
+        find_key = true;
+      }
 
-      if (!cookie.second.has_value() && value.empty()) {
+      if (!cookie.second.has_value() && !find_key) {
         // Present match but cookie not present.
         return false;
       }
 
-      if (cookie.second.has_value() && !cookie.second.value().match(value)) {
+      if (cookie.second.has_value() &&
+          (!find_key || !cookie.second.value().match(request_cookies.at(cookie.first)))) {
         // String match but cookie not match.
         return false;
       }
@@ -132,13 +163,13 @@ CommonMatcher::CommonMatcher(const CommonMatcherProto& config) {
   }
 }
 
-bool CommonMatcher::match(const Envoy::Http::HeaderMap& headers,
-                          const Envoy::Http::Utility::QueryParams& params) const {
-  bool result = true;
+bool CommonMatcher::match(const HttpCommonMatcherContext& context) const {
   for (const auto& matcher : matchers_) {
-    result = result && matcher->match(headers, params);
+    if (!matcher->match(context)) {
+      return false;
+    }
   }
-  return result;
+  return true;
 }
 
 } // namespace Http

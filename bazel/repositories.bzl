@@ -62,3 +62,7 @@ def envoy_netease_dependencies():
         "com_github_sewenew_redisplusplus",
         build_file = "@envoy_netease//bazel/external:redisplus.BUILD",
     )
+    _repository_impl(
+        "com_github_pantor_inja",
+        build_file = "@envoy_netease//bazel/external:pantor_inja.BUILD",
+    )

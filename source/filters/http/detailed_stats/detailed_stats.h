@@ -170,11 +170,12 @@ public:
                      const Http::ResponseHeaderMap& response_headers,
                      const StreamInfo::StreamInfo& stream_info) {
     TagsMetadataStats::StreamStatsContext context;
+    Common::Http::HttpCommonMatcherContext header_context(request_headers);
 
     if (matched_stats_.size() > 0) {
-      auto params = Http::Utility::parseQueryString(request_headers.getPathValue());
+      // auto params = Http::Utility::parseQueryString(request_headers.getPathValue());
       for (auto& matched_stat : matched_stats_) {
-        if (matched_stat.first->match(request_headers, params)) {
+        if (matched_stat.first->match(header_context)) {
           context.request_tags_.insert(context.request_tags_.end(), matched_stat.second.cbegin(),
                                        matched_stat.second.cend());
           break;
