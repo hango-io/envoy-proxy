@@ -115,6 +115,14 @@
       {
         "tag_name": "authz_dry_run_result",
         "regex": "(\\.shadow_(allowed|denied))"
+      },
+      {
+        "tag_name": "dubbo_interface",
+        "regex": "dubbo\\..*?(\\.(.*?))\\."
+      },
+      {
+        "tag_name": "dubbo_method",
+        "regex": "dubbo\\..*?\\..*?(\\.(.*?))\\."
       }
     ],
     "stats_matcher": {

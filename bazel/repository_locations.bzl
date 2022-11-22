@@ -20,4 +20,9 @@ REPOSITORY_LOCATIONS = dict(
         strip_prefix = "inja-3.1.0",
         urls = ["https://github.com/pantor/inja/archive/v3.1.0.tar.gz"],
     ),
+    com_github_spiderlabs_libmodsecurity = dict(
+        sha256 = "45b5c8d23808f9430ef6a5d096f4e90ec4af33b908ffb1c2fd6e0862e1a661c0",
+        strip_prefix = "ModSecurity",
+        urls = ["https://github.com/hango-io/common-lib/raw/main/envoy/modSecurity.tar.gz"],
+    ),
 )

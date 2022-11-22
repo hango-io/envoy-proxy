@@ -66,3 +66,7 @@ def envoy_netease_dependencies():
         "com_github_pantor_inja",
         build_file = "@envoy_netease//bazel/external:pantor_inja.BUILD",
     )
+    _repository_impl(
+        "com_github_spiderlabs_libmodsecurity",
+        build_file = "@envoy_netease//bazel/external:libmodsecurity.BUILD",
+    )

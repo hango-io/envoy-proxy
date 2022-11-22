@@ -1,0 +1,38 @@
+{
+    "suite_name": "waf-suite",
+    "suite_conf": {
+      "from_completed_yaml": "./waf.yaml"
+    },
+    "suite_case": [
+      {
+        "case_name": "waf-rule-str-intervention",
+        "request": {
+          "req_url": "http://localhost:8080/anything",
+          "method": "GET",
+          "headers": {
+            "wangkai": "scammer",
+            "host": "one.netease.com"
+          }
+        },
+        "response": {
+          "status": "403",
+          "body": "ModSecurity Action."
+        }
+      },
+      {
+        "case_name": "waf-rule-str-not-intervention",
+        "request": {
+          "req_url": "http://localhost:8080/anything",
+          "method": "GET",
+          "headers": {
+            "wangkai": "wangkai",
+            "host": "one.netease.com"
+          }
+        },
+        "response": {
+          "status": "200"
+        }
+      }
+    ]
+  }
+  

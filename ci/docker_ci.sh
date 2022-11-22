@@ -64,7 +64,8 @@ function envoy_binary_build() {
 function copy_others_config() {
     cp ./ci/Dockerfile "${ENVOY_IMAGE_BUILD_PATH}"
     cp ./ci/entrypoint.sh "${ENVOY_IMAGE_BUILD_PATH}"
-    cp ./ci/packaging/* "${ENVOY_IMAGE_BUILD_PATH}"/
+    # All other necessary files.
+    cp -r ./ci/packaging "${ENVOY_IMAGE_BUILD_PATH}"
 }
 
 function build_envoy_image() {

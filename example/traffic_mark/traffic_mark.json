@@ -1,0 +1,36 @@
+{
+    "suite_name": "traffic-mark-suite",
+    "suite_conf": {
+        "from_completed_yaml": "./traffic_mark.yaml"
+    },
+    "suite_case": [
+        {
+            "case_name": "traffic-mark-healthy-cluster",
+            "request": {
+                "req_url": "http://localhost:8080/anything",
+                "method": "GET",
+                "headers": {
+                    "qz_color": "dev-1",
+                    "host": "one.netease.com"
+                }
+            },
+            "response": {
+                "status": "200"
+            }
+        },
+        {
+            "case_name": "traffic-mark-unhealthy-cluster",
+            "request": {
+                "req_url": "http://localhost:8080/anything",
+                "method": "GET",
+                "headers": {
+                    "qz_color": "dev-1.project-1",
+                    "host": "one.netease.com"
+                }
+            },
+            "response": {
+                "status": "503"
+            }
+        }
+    ]
+}

@@ -1,0 +1,31 @@
+
+syntax = "proto3";
+
+package proxy.filters.http.waf.v2;
+
+import "google/protobuf/struct.proto";
+
+option java_package = "proxy.filters.http.waf.v2";
+option java_outer_classname = "WafProto";
+option java_multiple_files = true;
+
+import "validate/validate.proto";
+
+// example:
+//   waf_rule:
+//   - waf_rule_path: ./example/waf/REQUEST-912-DOS-PROTECTION.conf
+//     config:
+//       tx.dos_burst_time_slice: "10"
+//       tx.dos_counter_threshold: "5"
+//       tx.dos_block_timeout: "10"
+
+message Rule {
+  // waf 规则路径
+  string waf_rule_path = 1;
+  // waf 规则配置
+  google.protobuf.Struct config = 2;
+}
+
+message RuleSet {
+  repeated Rule waf_rule = 1; // 多个 waf 规则
+}
