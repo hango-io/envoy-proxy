@@ -1,0 +1,215 @@
+syntax = "proto3";
+
+package proxy.upstreams.http.dubbo.v3;
+
+option java_package = "proxy.upstreams.http.dubbo.v3";
+option java_outer_classname = "DubboUpstreamPoolOuterClass";
+option java_multiple_files = true;
+
+import "validate/validate.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+import "envoy/config/core/v3/extension.proto";
+
+// Context configuration used to convert HTTP request to Dubbo request.
+message DubboBridgeContext {
+  message Attachment {
+    // Attachment name.
+    string name = 1 [(validate.rules).string = {min_len: 1}];
+
+    oneof value_source {
+      option (validate.required) = true;
+
+      // Plain attachment value.
+      string static = 2;
+
+      // Get attachment value by the header name from request headers.
+      string header = 3 [(validate.rules).string = {min_len: 1}];
+
+      // Get attachment value by the cookie name from request cookies.Attachment
+      string cookie = 4 [(validate.rules).string = {min_len: 1}];
+    }
+  }
+
+  message PathType {
+    string path = 1 [(validate.rules).string = {min_len: 1}];
+    string type = 2 [(validate.rules).string = {min_len: 1}];
+  }
+
+  message Parameter {
+    // Parameter type. This should never be null and is complete Java type name.
+    string type = 1 [(validate.rules).string = {min_len: 1}];
+
+    // Argument/Parameter name. This name my be used to get parameter from query,
+    // headers, or Json body. This can be empty in some special cases.
+    string name = 2;
+
+    // This is used to determine that if this parameter is required. If this is set
+    // to true and no parameter is provide by the caller/client, then the request
+    // should be treated as bad request.
+    bool required = 3;
+
+    // Default value of current parameter. This is only valid if `required' is false
+    // and the caller/client has not supplied an parameter.
+    // The value of default should be Json text.
+    string default = 4;
+
+    // Generic type support. This will be used to set `class` field to the anonymous
+    // objects.
+    // This should be multiple path/type pairs. The path should be string started and
+    // seperated with dot '.'. Every frame in the path should be field name of Java class.
+    // '*' is special frame used to to indicate all items of list or all values of map.
+    // Use following argument as example. The generic value could be:
+    //
+    // generic:
+    // - path: .sub_obj1
+    //   type: java.lang.FakeType
+    // - path: .sub_map1.*
+    //   type: java.lang.FakeType
+    //
+    // {
+    //     "sub_obj1":{
+    //        "field1": "value1"
+    //     },
+    //     "sub_map1":{
+    //        "key1":{
+    //           "field1": "value1"
+    //        },
+    //        "key2":{
+    //           "field1": "value1"
+    //        }
+    //     }
+    //  }
+    //
+    // This final argument is as following.
+    //
+    // {
+    //     "sub_obj1":{
+    //        "field1":"value1",
+    //        "class":"java.lang.FakeType"
+    //     },
+    //     "sub_map1":{
+    //        "key1":{
+    //           "field1":"value1",
+    //           "class":"java.lang.FakeType"
+    //        },
+    //        "key2":{
+    //           "field1":"value1",
+    //           "class":"java.lang.FakeType"
+    //        }
+    //     }
+    //  }
+    repeated PathType generic = 5;
+  }
+
+  enum Source {
+    HTTP_BODY = 0;
+    HTTP_QUERY = 2;
+  }
+
+  // Dubbo service/interface name.
+  string service = 1 [(validate.rules).string = {min_len: 1}];
+  // Dubbo service/interface version.
+  string version = 2;
+  // Dubbo method.
+  string method = 3 [(validate.rules).string = {min_len: 1}];
+
+  // Dubbo group.
+  string group = 4;
+
+  // Dubbo argument source. Only `HTTP_QUERY`,`HTTP_BODY` can be used for now. `HTTP_BODY` will be
+  // used by default if no any source is set.
+  Source source = 5;
+
+  // A set of key/values that will be added to dubbo request attachments.
+  repeated Attachment attachments = 6;
+
+  // Multiple parameter rules used to get argument from HTTP request. If any parameter name
+  // is empty, we will ignore all the names.
+  // Only when the `source` is set to `HTTP_BODY` and the body content is Json array, the
+  // parameter name can be empty. Otherwise, this configuration would be rejected or the
+  // request would be treated as bad reuqest.
+  repeated Parameter parameters = 7;
+
+  // If set to true, the pair with null value in the map will be ignored in the HTTP requests.
+  bool ignore_null_map_pair = 8;
+}
+
+message DubboBridgeDynamic {
+  // Custom getter that will be used to get dubbo bridge context from request headers.
+  envoy.config.core.v3.TypedExtensionConfig context_getter = 1
+      [(validate.rules).message = {required: true}];
+}
+
+// Dubbo bridge context used to covert HTTP request to Dubbo request. This should be set in
+// route metadata with namespace of ``proxy.upstreams.http.dubbo``. And only the metadata
+// in the route will be used. Using following configuraton as example.enum
+//
+// domains:
+// - "*"
+// routes:
+// - match:
+//     prefix: "/"
+//   route:
+//     cluster: dubbo_service
+//   metadata:
+//     filter_metadata:
+//       proxy.upstreams.http.dubbo:
+//         context:
+//           service: "org.apache.dubbo.UserProvider"
+//           version: ""
+//           method: "queryUser"
+//           group: ""
+//           source: HTTP_BODY
+//           parameters:
+//           - type: "org.apache.dubbo.User"
+//             name: "user"
+//             required: false
+//             default: "{\"id\": \"A001\"}"
+//             generic:
+//             - path: "."
+//               type: org.apache.dubbo.FakeUser
+//           attachments:
+//           - name: "key"
+//             value: "value"
+//           - name: "header-key"
+//             header: "original-header-key"
+//           - name: "cookie-key"
+//             cookie: "original-cookie-key"
+//           ignore_null_map_pair: true
+message DubboBridge {
+  oneof bridge_config {
+    option (validate.required) = true;
+
+    // Static configuration for conversion of HTTP request to dubbo request.
+    DubboBridgeContext context = 1;
+
+    // Get protocol conversion context from the HTTP request headers.
+    DubboBridgeDynamic dynamic = 2;
+  }
+
+  // Optional custom argument getter. This getter will be used to get argument from request
+  // headers or body. If this is not set, the default getter
+  // ``proxy.dubbo_bridge.argument_getter.simple`` will be used. The default getter could
+  // be override by setting environment variable ``DUBBO_BRIDGE_DEFAULT_ARGUMENT_GETTER``.
+  envoy.config.core.v3.TypedExtensionConfig argument_getter = 5;
+
+  // Optional custom response getter. This getter will be used to get response string from
+  // Dubbo response object. If this is not set, the default getter
+  // ``proxy.dubbo_bridge.response_getter.simple`` will be used. The default getter could
+  // be override by setting environment variable ``DUBBO_BRIDGE_DEFAULT_RESPONSE_GETTER``.
+  envoy.config.core.v3.TypedExtensionConfig response_getter = 6;
+
+  // If the status (in dubbo header) of dubbo response is not ok, then this field will be used
+  // to set HTTP response code. If this is not set or is set to zero, the 501 will be used by
+  // default.
+  google.protobuf.UInt64Value protocol_error_code = 3;
+
+  // If the response body type is exception, then this field will be used to set HTTP response
+  // code. If this is not set or is set to zero, the 503 will be used by default.
+  google.protobuf.UInt64Value resp_exception_code = 4;
+}
+
+// A connection pool which forwards downstream HTTP as Dubbo to upstream,
+message DubboUpstreamPool {
+}

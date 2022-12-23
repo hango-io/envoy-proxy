@@ -25,4 +25,9 @@ REPOSITORY_LOCATIONS = dict(
         strip_prefix = "ModSecurity",
         urls = ["https://github.com/hango-io/common-lib/raw/main/envoy/modSecurity.tar.gz"],
     ),
+    com_github_alibaba_hessian2 = dict(
+        urls = ["https://github.com/alibaba/hessian2-codec/archive/dd8e05487a27b367b90ce81f4e6e6f62d693a212.tar.gz"],
+        strip_prefix = "hessian2-codec-dd8e05487a27b367b90ce81f4e6e6f62d693a212",
+        sha256 = "93260c54406e11b7be078a7ea120f7ab0df475c733e68d010fde400c5c8c8162",
+    ),
 )

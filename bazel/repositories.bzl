@@ -26,7 +26,7 @@ def _repository_impl(name, **kwargs):
         )
 
     if "commit" in location:
-        # Git repository at given commit ID. Add a BUILD file if requested.
+        # Git repository at given commit ID.
         new_git_repository(
             name = name,
             remote = location["remote"],
@@ -69,4 +69,7 @@ def envoy_netease_dependencies():
     _repository_impl(
         "com_github_spiderlabs_libmodsecurity",
         build_file = "@envoy_netease//bazel/external:libmodsecurity.BUILD",
+    )
+    _repository_impl(
+        "com_github_alibaba_hessian2",
     )
