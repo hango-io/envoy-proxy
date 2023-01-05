@@ -1,0 +1,233 @@
+syntax = "proto3";
+
+package proxy.bridge.dubbo.anyway.v3;
+
+option java_package = "proxy.bridge.dubbo.anyway.v3";
+option java_outer_classname = "ProxyBridgeDubboAnywayV3";
+option java_multiple_files = true;
+
+import "api/proxy/bridge/dubbo/v3/dubbo.proto";
+
+import "validate/validate.proto";
+
+// This extensions of ``proxy.upstreams.http.dubbo.v3.DubboBridge.argument_getter``.
+// You could enable this extension by setting
+// ``proxy.upstreams.http.dubbo.v3.DubboBridge.argument_getter`` as follows:
+//
+// domains:
+// - "*"
+// routes:
+// - match:
+//     prefix: "/"
+//   route:
+//     cluster: dubbo_service
+//   metadata:
+//     filter_metadata:
+//       proxy.upstreams.http.dubbo:
+//         argument_getter:
+//           name: proxy.dubbo_bridge.argument_getter.anyway
+//           typed_config:
+//             "@type": type.googleapis.com/proxy.bridge.dubbo.anyway.v3.ArgumentGetterConfig
+//         context:
+//           service: "org.apache.dubbo.UserProvider"
+//           version: ""
+//           method: "queryUser"
+//           group: ""
+//           source: HTTP_BODY
+//           parameters:
+//           - type: "org.apache.dubbo.User"
+//             name: "user"
+//             required: false
+//             default: "{\"id\": \"A001\"}"
+//             generic:
+//             - path: "."
+//               type: org.apache.dubbo.FakeUser
+//           attachments:
+//           - name: "key"
+//             static: "value"
+//           - name: "header-key"
+//             header: "original-header-key"
+//           - name: "cookie-key"
+//             cookie: "original-cookie-key"
+//           ignore_null_map_pair: true
+//
+// Or you can set the environment variable ``DUBBO_BRIDGE_DEFAULT_ARGUMENT_GETTER`` as
+// ``proxy.dubbo_bridge.argument_getter.anyway`` to enable this extension by default.
+message ArgumentGetterConfig {
+}
+
+// This is extension of ``proxy.upstreams.http.dubbo.v3.DubboBridge.response_getter``.
+// You could enable this extension by setting
+// ``proxy.upstreams.http.dubbo.v3.DubboBridge.response_getter`` as follows:
+//
+// domains:
+// - "*"
+// routes:
+// - match:
+//     prefix: "/"
+//   route:
+//     cluster: dubbo_service
+//   metadata:
+//     filter_metadata:
+//       proxy.upstreams.http.dubbo:
+//         response_getter:
+//           name: proxy.dubbo_bridge.response_getter.anyway
+//           typed_config:
+//             "@type": type.googleapis.com/proxy.bridge.dubbo.anyway.v3.ResponseGetterConfig
+//         context:
+//           service: "org.apache.dubbo.UserProvider"
+//           version: ""
+//           method: "queryUser"
+//           group: ""
+//           source: HTTP_BODY
+//           parameters:
+//           - type: "org.apache.dubbo.User"
+//             name: "user"
+//             required: false
+//             default: "{\"id\": \"A001\"}"
+//             generic:
+//             - path: "."
+//               type: org.apache.dubbo.FakeUser
+//           attachments:
+//           - name: "key"
+//             static: "value"
+//           - name: "header-key"
+//             header: "original-header-key"
+//           - name: "cookie-key"
+//             cookie: "original-cookie-key"
+//           ignore_null_map_pair: true
+//
+// Or you can set the environment variable ``DUBBO_BRIDGE_DEFAULT_RESPONSE_GETTER`` as
+// ``proxy.dubbo_bridge.response_getter.anyway`` to enable this extension by default.
+message ResponseGetterConfig {
+}
+
+// This is extension of ``proxy.upstreams.http.dubbo.v3.DubboBridge.argument_getter``.
+// You could enable this extension by setting
+// ``proxy.upstreams.http.dubbo.v3.DubboBridge.argument_getter`` as follows:
+//
+// domains:
+// - "*"
+// routes:
+// - match:
+//     prefix: "/"
+//   route:
+//     cluster: dubbo_service
+//   metadata:
+//     filter_metadata:
+//       proxy.upstreams.http.dubbo:
+//         argument_getter:
+//           name: proxy.dubbo_bridge.argument_getter.anyway_bff
+//           typed_config:
+//             "@type": type.googleapis.com/proxy.bridge.dubbo.anyway.v3.BffArgumentGetterConfig
+//         context:
+//           service: "org.apache.dubbo.UserProvider"
+//           version: ""
+//           method: "queryUser"
+//           group: ""
+//           source: HTTP_BODY
+//           parameters:
+//           - type: "org.apache.dubbo.User"
+//             name: "user"
+//             required: false
+//             default: "{\"id\": \"A001\"}"
+//             generic:
+//             - path: "."
+//               type: org.apache.dubbo.FakeUser
+//           attachments:
+//           - name: "key"
+//             static: "value"
+//           - name: "header-key"
+//             header: "original-header-key"
+//           - name: "cookie-key"
+//             cookie: "original-cookie-key"
+//           ignore_null_map_pair: true
+//
+// Or you can set the environment variable ``DUBBO_BRIDGE_DEFAULT_ARGUMENT_GETTER`` as
+// ``proxy.dubbo_bridge.argument_getter.anyway_bff`` to enable this extension by default.
+message BffArgumentGetterConfig {
+}
+
+// This is extension of ``proxy.upstreams.http.dubbo.v3.DubboBridge.response_getter``.
+// You could enable this extension by setting
+// ``proxy.upstreams.http.dubbo.v3.DubboBridge.response_getter`` as follows:
+//
+// domains:
+// - "*"
+// routes:
+// - match:
+//     prefix: "/"
+//   route:
+//     cluster: dubbo_service
+//   metadata:
+//     filter_metadata:
+//       proxy.upstreams.http.dubbo:
+//         response_getter:
+//           name: proxy.dubbo_bridge.response_getter.anyway_bff
+//           typed_config:
+//             "@type": type.googleapis.com/proxy.bridge.dubbo.anyway.v3.BffResponseGetterConfig
+//         context:
+//           service: "org.apache.dubbo.UserProvider"
+//           version: ""
+//           method: "queryUser"
+//           group: ""
+//           source: HTTP_BODY
+//           parameters:
+//           - type: "org.apache.dubbo.User"
+//             name: "user"
+//             required: false
+//             default: "{\"id\": \"A001\"}"
+//             generic:
+//             - path: "."
+//               type: org.apache.dubbo.FakeUser
+//           attachments:
+//           - name: "key"
+//             static: "value"
+//           - name: "header-key"
+//             header: "original-header-key"
+//           - name: "cookie-key"
+//             cookie: "original-cookie-key"
+//           ignore_null_map_pair: true
+//
+// Or you can set the environment variable ``DUBBO_BRIDGE_DEFAULT_RESPONSE_GETTER`` as
+// ``proxy.dubbo_bridge.response_getter.anyway_bff`` to enable this extension by default.
+message BffResponseGetterConfig {
+}
+
+// This is extension of ``proxy.upstreams.http.dubbo.v3.DubboBridgeDynamic.context_getter``.
+// You could enable this extension by setting
+// ``proxy.upstreams.http.dubbo.v3.DubboBridgeDynamic.context_getter`` as follows:
+//
+// domains:
+// - "*"
+// routes:
+// - match:
+//     prefix: "/"
+//   route:
+//     cluster: dubbo_service
+//   metadata:
+//     filter_metadata:
+//       proxy.upstreams.http.dubbo:
+//         argument_getter:
+//           name: proxy.dubbo_bridge.argument_getter.anyway_bff
+//           typed_config:
+//             "@type": type.googleapis.com/proxy.bridge.dubbo.anyway.v3.BffArgumentGetterConfig
+//         response_getter:
+//           name: proxy.dubbo_bridge.response_getter.anyway_bff
+//           typed_config:
+//             "@type": type.googleapis.com/proxy.bridge.dubbo.anyway.v3.BffResponseGetterConfig
+//         dynamic:
+//           context_getter:
+//             name: proxy.dubbo_bridge.dynamic_context.anyway_bff
+//             typed_config:
+//               "@type": type.googleapis.com/proxy.bridge.dubbo.anyway.v3.BffDynamicContextConfig
+//               attachments:
+//               - name: "key"
+//                 static: "value"
+//               - name: "header-key"
+//                 header: "original-header-key"
+//               - name: "cookie-key"
+//                 cookie: "original-cookie-key"
+message BffDynamicContextConfig {
+  repeated proxy.bridge.dubbo.v3.DubboBridgeContext.Attachment attachments = 1;
+}

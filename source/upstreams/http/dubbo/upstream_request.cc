@@ -377,9 +377,14 @@ void DubboUpstream::onUpstreamData(Envoy::Buffer::Instance& data, bool end_strea
     return;
   }
   dubbo_response_buffer_.move(data);
-  if (auto s = readRespnoseFromUpstream(); s == ResponseStatus::WAITING && end_stream) {
-    handleRawResponse(protocol_error_code_, "More data is necessary for upstream but end stream",
-                      true);
+
+  try {
+    if (auto s = readRespnoseFromUpstream(); s == ResponseStatus::WAITING && end_stream) {
+      handleResponse(protocol_error_code_, ResponseGetter::Type::Exception,
+                     "More data is necessary for upstream but end stream", true);
+    }
+  } catch (const std::exception& e) {
+    handleResponse(protocol_error_code_, ResponseGetter::Type::Exception, e.what(), true);
   }
 }
 

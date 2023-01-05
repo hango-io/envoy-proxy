@@ -32,7 +32,7 @@ namespace Http {
 namespace Dubbo {
 
 using namespace Envoy::Proxy::Common::DubboBridge;
-using ProtoDubboBridge = proxy::upstreams::http::dubbo::v3::DubboBridge;
+using ProtoDubboBridge = proxy::bridge::dubbo::v3::DubboBridge;
 
 inline const std::string& defaultArgumentGetterName() {
   static const std::string Name = std::getenv("DUBBO_BRIDGE_DEFAULT_ARGUMENT_GETTER") != nullptr

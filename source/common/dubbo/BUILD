@@ -26,7 +26,7 @@ envoy_cc_library(
     ],
     repository = "@envoy",
     deps = [
-        "//api/proxy/upstreams/http/dubbo/v3:pkg_cc_proto",
+        "//api/proxy/bridge/dubbo/v3:pkg_cc_proto",
         "@com_github_alibaba_hessian2//hessian2:codec_impl_lib",
         "@com_github_alibaba_hessian2//hessian2/basic_codec:object_codec_lib",
         "@envoy//envoy/http:header_map_interface",

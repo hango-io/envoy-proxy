@@ -11,8 +11,8 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "api/proxy/upstreams/http/dubbo/v3/dubbo.pb.h"
-#include "api/proxy/upstreams/http/dubbo/v3/dubbo.pb.validate.h"
+#include "api/proxy/bridge/dubbo/v3/dubbo.pb.h"
+#include "api/proxy/bridge/dubbo/v3/dubbo.pb.validate.h"
 #include "hessian2/basic_codec/object_codec.hpp"
 #include "hessian2/codec.hpp"
 #include "hessian2/object.hpp"
@@ -41,7 +41,7 @@ using Envoy::Extensions::NetworkFilters::DubboProxy::DubboProtocolImpl;
 using Envoy::Extensions::NetworkFilters::DubboProxy::MessageMetadata;
 using Envoy::Extensions::NetworkFilters::DubboProxy::MessageMetadataSharedPtr;
 
-using ProtoDubboBridgeContext = proxy::upstreams::http::dubbo::v3::DubboBridgeContext;
+using ProtoDubboBridgeContext = proxy::bridge::dubbo::v3::DubboBridgeContext;
 
 using FlatStringMap = absl::flat_hash_map<std::string, std::string>;
 
@@ -170,6 +170,10 @@ public:
   Source getArgumentSource() const { return argument_source_; }
 
   bool ignoreMapNullPair() const { return ignore_null_map_pair_; }
+
+  const FlatStringMap& staticAttachmentsForTest() const { return static_attachs_; }
+  const FlatStringMap& headerAttachmentsForTest() const { return header_attachs_; }
+  const FlatStringMap& cookieAttachmentsForTest() const { return cookie_attachs_; }
 
 private:
   void writeStaticAttachments(Hessian2::Encoder& encoder) const {
