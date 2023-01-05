@@ -34,6 +34,7 @@ if __name__ == "__main__":
     exts = get_extension_labels(exts, "//source/filters/...")
     exts = get_extension_labels(exts, "//source/extensions/...")
     exts = get_extension_labels(exts, "//source/upstreams/...")
+    exts = get_extension_labels(exts, "//source/bridge/...")
 
     if len(exts) == 0:
         exit(1)
