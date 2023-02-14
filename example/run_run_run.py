@@ -238,6 +238,14 @@ def run_envoy_and_check_suite(binary_path, suite):
     time.sleep(5)
     return suite_name, suite_case_num, suite_case_ok_num
 
+def per_filter_check(task, binary_path, example_result):
+    logging.info("Running Envoy example task: {0} and check......".format(task))
+    task_path = os.path.join(os.getcwd(), "example", task)
+    file_name_list, task_result = os.listdir(task_path), []
+    for file in [x for x in file_name_list if x.endswith(".json")]:
+        result = run_envoy_and_check_suite(args.binary, os.path.join(task_path, file))
+        task_result.append(result)
+    example_result[task] = task_result
 
 parser = argparse.ArgumentParser(description="A simple empty envoy example script")
 
@@ -250,6 +258,7 @@ parser.add_argument(
     help="Script log level.(debug/info/error)",
     default="info",
 )
+parser.add_argument("--target", "-t", type=str, help="Target filter.")
 args = parser.parse_args()
 
 log_format_string = "[%(asctime)s %(levelname)s] %(message)s"
@@ -262,14 +271,14 @@ else:
 
 example_result = {}
 
-for task in run_run_cfg.example_set:
-    logging.info("Running Envoy example task: {0} and check......".format(task))
-    task_path = os.path.join(os.getcwd(), "example", task)
-    file_name_list, task_result = os.listdir(task_path), []
-    for file in [x for x in file_name_list if x.endswith(".json")]:
-        result = run_envoy_and_check_suite(args.binary, os.path.join(task_path, file))
-        task_result.append(result)
-    example_result[task] = task_result
+if args.target:
+    if args.target in run_run_cfg.example_set:
+        per_filter_check(args.target, args.binary, example_result)
+    else:
+        logging.error("Specified filter is not in example_set")
+else:
+    for task in run_run_cfg.example_set:
+        per_filter_check(task, args.binary, example_result)
 
 
 logging.info("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")

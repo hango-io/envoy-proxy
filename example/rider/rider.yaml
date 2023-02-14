@@ -84,16 +84,16 @@ static_resources:
               "@type": type.googleapis.com/proxy.filters.http.rider.v3alpha1.FilterConfig
               plugin:
                 vm_config:
-                  package_path: "/path/to/rider/?/init.lua;/path/to/rider/?.lua;"
+                  package_path: "/home/starrynight/workspace/rider/?/init.lua;/home/starrynight/workspace/rider/?.lua;"
                 code:
                   local:
-                    filename: /path/to/rider/plugins/echo/echo.lua
+                    filename: /home/starrynight/workspace/rider/plugins/echo/echo.lua
                 name: echo
                 config:
                   message: "C++ is awesome!"
                   source: Static
                   destination: Body
-          - name: envoy.filters.http.router
+          - name: envoy.router
             typed_config: {}
 
   clusters:

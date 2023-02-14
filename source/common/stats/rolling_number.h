@@ -3,7 +3,7 @@
 #include <map>
 #include <memory>
 
-#include <envoy/common/time.h>
+#include "envoy/common/time.h"
 
 namespace Envoy {
 namespace Proxy {

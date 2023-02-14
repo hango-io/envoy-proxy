@@ -1,4 +1,5 @@
 #include "source/filters/http/metadata_hub/config.h"
+
 #include "source/filters/http/metadata_hub/metadata_hub.h"
 
 namespace Envoy {

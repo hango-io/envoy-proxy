@@ -400,6 +400,79 @@ TEST_F(HttpIpRestrictionFilterTest, IpSourceHeader) {
   EXPECT_EQ(Http::FilterHeadersStatus::StopIteration, status);
 }
 
+TEST_F(HttpIpRestrictionFilterTest, ForbiddenByIpTypeError) {
+
+  initIpRestrictionFilter("", true, {"8.8.8.256"});
+
+  ON_CALL(*decode_filter_callbacks_.route_,
+          mostSpecificPerFilterConfig(HttpIpRestrictionFilter::name()))
+      .WillByDefault(Return(route_config_.get()));
+
+  EXPECT_CALL(decode_filter_callbacks_, streamInfo()).WillOnce(ReturnRef(stream_info_));
+
+  Network::Address::InstanceConstSharedPtr address =
+      std::make_shared<Network::Address::Ipv4Instance>("8.8.8.8");
+  stream_info_.downstream_connection_info_provider_->setRemoteAddress(address);
+
+  auto status = filter_->decodeHeaders(request_headers_, true);
+
+  EXPECT_EQ(Http::FilterHeadersStatus::StopIteration, status);
+}
+
+TEST_F(HttpIpRestrictionFilterTest, ForbiddenByIpEntryEmpty) {
+
+  initIpRestrictionFilter("", true, {""});
+
+  ON_CALL(*decode_filter_callbacks_.route_,
+          mostSpecificPerFilterConfig(HttpIpRestrictionFilter::name()))
+      .WillByDefault(Return(route_config_.get()));
+
+  EXPECT_CALL(decode_filter_callbacks_, streamInfo()).WillOnce(ReturnRef(stream_info_));
+
+  Network::Address::InstanceConstSharedPtr address =
+      std::make_shared<Network::Address::Ipv4Instance>("8.8.8.8");
+  stream_info_.downstream_connection_info_provider_->setRemoteAddress(address);
+
+  auto status = filter_->decodeHeaders(request_headers_, true);
+
+  EXPECT_EQ(Http::FilterHeadersStatus::StopIteration, status);
+}
+
+TEST_F(HttpIpRestrictionFilterTest, NoIpSourceHeader) {
+
+  initIpRestrictionFilter("x-real-ip", false, {"8.8.8.8"});
+
+  ON_CALL(*decode_filter_callbacks_.route_,
+          mostSpecificPerFilterConfig(HttpIpRestrictionFilter::name()))
+      .WillByDefault(Return(route_config_.get()));
+
+  Http::TestRequestHeaderMapImpl request_headers{{"content-type", "test"},
+                                                 {":method", "GET"},
+                                                 {":authority", "www.proxy.com"},
+                                                 {":path", "/path"}};
+  auto status = filter_->decodeHeaders(request_headers, true);
+
+  EXPECT_EQ(Http::FilterHeadersStatus::Continue, status);
+}
+
+TEST_F(HttpIpRestrictionFilterTest, IpSourceHeaderFormatError) {
+
+  initIpRestrictionFilter("x-real-ip", false, {"8.8.8.8"});
+
+  ON_CALL(*decode_filter_callbacks_.route_,
+          mostSpecificPerFilterConfig(HttpIpRestrictionFilter::name()))
+      .WillByDefault(Return(route_config_.get()));
+
+  Http::TestRequestHeaderMapImpl request_headers{{"content-type", "test"},
+                                                 {":method", "GET"},
+                                                 {":authority", "www.proxy.com"},
+                                                 {":path", "/path"},
+                                                 {"x-real-ip", "8.8.8.256"}};
+  auto status = filter_->decodeHeaders(request_headers, true);
+
+  EXPECT_EQ(Http::FilterHeadersStatus::Continue, status);
+}
+
 } // namespace IpRestriction
 } // namespace HttpFilters
 } // namespace Proxy

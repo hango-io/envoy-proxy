@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package proxy.upstreams.http.dubbo.v3;
+
+option java_package = "proxy.upstreams.http.dubbo.v3";
+option java_outer_classname = "DubboUpstreamPoolOuterClass";
+option java_multiple_files = true;
+
+import "validate/validate.proto";
+
+// A connection pool which forwards downstream HTTP as Dubbo to upstream,
+message DubboUpstreamPool {
+}

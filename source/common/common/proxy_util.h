@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace Envoy {
 namespace Proxy {
 namespace Common {

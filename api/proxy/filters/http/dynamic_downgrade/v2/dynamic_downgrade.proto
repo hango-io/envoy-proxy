@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package proxy.filters.http.dynamic_downgrade.v2;
+
+option java_package = "proxy.filters.http.dynamic_downgrade.v2";
+option java_outer_classname = "DynamicDowngradeProto";
+option java_multiple_files = true;
+
+import "validate/validate.proto";
+import "api/proxy/common/cache_api/v3/cache_api.proto";
+import "api/proxy/common/matcher/v3/matcher.proto";
+import "google/protobuf/duration.proto";
+
+message DowngradeRemote {
+  string cluster = 1 [(validate.rules).string.min_bytes = 1];
+  // Sets the maximum duration in milliseconds that a response can take to
+  // arrive upon request.
+  google.protobuf.Duration timeout = 2 [(validate.rules).duration.required = true];
+}
+
+message ProtoCommonConfig {
+  // A optional string used to create admin api.
+  // It only be used to create cache 'remove' api for used_caches case now.
+  string apis_prefix = 1;
+
+  repeated proxy.common.cache_api.v3.Cache used_caches = 2;
+
+  // A remote http service used to downgrade.
+  DowngradeRemote used_remote = 3;
+}
+
+message ProtoRouteConfig {
+  // to determine downgrade or not
+  proxy.common.matcher.v3.CommonMatcher downgrade_rqx = 1;
+  proxy.common.matcher.v3.CommonMatcher downgrade_rpx = 2
+      [(validate.rules).message.required = true];
+
+  enum DowngradeSource {
+    CACHE = 0;
+    HTTPX = 1;
+  }
+  DowngradeSource downgrade_src = 7;
+
+  // to determine cache the response or not
+  proxy.common.matcher.v3.CommonMatcher cache_rpx_rpx = 3
+      [(validate.rules).message.required = true];
+
+  // expire time of data. 0 expire time
+  // or no expire time will disable cache
+  map<string, proxy.common.cache_api.v3.CacheTTL> cache_ttls = 4;
+  proxy.common.cache_api.v3.HttpCacheKeyMaker key_maker = 5;
+
+  // The HTTP URI. It should be a full FQDN with protocol, host and path.
+  string downgrade_uri = 6;
+  // If this field is set, the cluster name and timeout in this field are used
+  // during the downgrade process, ignoring the global configuration.
+  DowngradeRemote override_remote = 8;
+}

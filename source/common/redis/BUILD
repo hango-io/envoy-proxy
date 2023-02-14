@@ -1,10 +1,10 @@
-licenses(["notice"])  # Apache 2
-
 load(
     "@envoy//bazel:envoy_build_system.bzl",
     "envoy_cc_library",
     "envoy_package",
 )
+
+licenses(["notice"])  # Apache 2
 
 envoy_package()
 
@@ -35,6 +35,7 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         "@com_github_redis_hiredis//:libhiredis",
-        "@envoy//source/exe:envoy_common_lib",
+        "@envoy//source/common/common:logger_lib",
+        "@envoy//source/common/event:dispatcher_lib",
     ],
 )

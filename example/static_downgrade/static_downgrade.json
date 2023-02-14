@@ -127,6 +127,62 @@
       "response": {
         "status": "403"
       }
+    },
+    {
+      "case_name": "static-downgrade-response-flags-not-match",
+      "#comment": "Response flags not match then no downgrade",
+      "request": {
+        "req_url": "http://localhost:8080/no/downgrade",
+        "method": "GET",
+        "headers": {
+          "host": "e.test.com"
+        }
+      },
+      "response": {
+        "status": "503"
+      }
+    },
+    {
+      "case_name": "static-downgrade-response-flags-match",
+      "#comment": "Response flags match then downgrade",
+      "request": {
+        "req_url": "http://localhost:8080/downgrade",
+        "method": "GET",
+        "headers": {
+          "host": "e.test.com"
+        }
+      },
+      "response": {
+        "status": "333"
+      }
+    },
+    {
+      "case_name": "static-downgrade-response-code-details-not-match",
+      "#comment": "Response flags not match then no downgrade",
+      "request": {
+        "req_url": "http://localhost:8080/no/downgrade/for/details",
+        "method": "GET",
+        "headers": {
+          "host": "e.test.com"
+        }
+      },
+      "response": {
+        "status": "503"
+      }
+    },
+    {
+      "case_name": "static-downgrade-response-flag-match",
+      "#comment": "Response flags match then downgrade",
+      "request": {
+        "req_url": "http://localhost:8080/downgrade/for/details",
+        "method": "GET",
+        "headers": {
+          "host": "e.test.com"
+        }
+      },
+      "response": {
+        "status": "333"
+      }
     }
   ]
 }

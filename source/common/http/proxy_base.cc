@@ -1,4 +1,5 @@
-#include "common/http/proxy_base.h"
+#include "source/common/http/proxy_base.h"
+
 #include <iostream>
 
 namespace Envoy {
@@ -51,6 +52,24 @@ Envoy::Http::ResponseMessagePtr makeMessageCopy(const Envoy::Http::ResponseMessa
   Envoy::Http::HeaderMapImpl::copyFrom(*header_ptr, message->headers());
 
   auto result = std::make_unique<Envoy::Http::ResponseMessageImpl>(std::move(header_ptr));
+  if (message->body().length() <= 0) {
+    // Body 不存在或者 Body 大小为 0
+    result->headers().removeTransferEncoding();
+    result->headers().setContentLength(0);
+  } else {
+    // Body 存在且其大小不为 0
+    result->body().add(message->body());
+    result->headers().removeTransferEncoding();
+    result->headers().setContentLength(result->body().length());
+  }
+  return std::move(result);
+}
+
+Envoy::Http::RequestMessagePtr makeMessageCopy(const Envoy::Http::RequestMessagePtr& message) {
+  auto header_ptr = Envoy::Http::RequestHeaderMapImpl::create();
+  Envoy::Http::HeaderMapImpl::copyFrom(*header_ptr, message->headers());
+
+  auto result = std::make_unique<Envoy::Http::RequestMessageImpl>(std::move(header_ptr));
   if (message->body().length() <= 0) {
     // Body 不存在或者 Body 大小为 0
     result->headers().removeTransferEncoding();

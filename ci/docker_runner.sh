@@ -4,8 +4,11 @@
 
 set -e
 
-# Build container image based on 'ci/build.Dockerfile'
-export ENVOY_BUILD_IMAGE="envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04"
+# Run docker build image and can use this docker as work space to develop, test, and build new Envoy.
+UBUNTU_IMAGE_HUB=${ENVOY_PROXY_IMAGE_HUB:?}/envoy-build-ubuntu
+UBUNTU_IMAGE_TAG="81a93046060dbe5620d5b3aa92632090a9ee4da6"
+
+export ENVOY_BUILD_IMAGE=${ENVOY_BUILD_IMAGE:-"${UBUNTU_IMAGE_HUB}:${UBUNTU_IMAGE_TAG}"}
 
 DOCKER_RUNNING_COMMAND=$*
 DOCKER_RUNNING_MODE="-it"
@@ -36,10 +39,12 @@ START_COMMAND=("/bin/bash" "-lc" "groupadd --gid $(id -g) -f envoygroup \
 ENVOY_DOCKER_BUILD_DIR=${ENVOY_DOCKER_BUILD_DIR:-"${HOME}/envoy_build"}
 mkdir -p "${ENVOY_DOCKER_BUILD_DIR}"
 
+CONTAINER_NAME=${USER}-$(date +'%Y%m%d%H%M')
+
 [[ -n "${SSH_AUTH_SOCK}" ]] && ENVOY_DOCKER_OPTIONS+=(-v "${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK}" -e SSH_AUTH_SOCK)
 
 # Since we specify an explicit hash, docker-run will pull from the remote repo if missing.
-docker run --rm "${DOCKER_RUNNING_MODE}" \
+docker run --rm "${DOCKER_RUNNING_MODE}" --name "${CONTAINER_NAME}" \
     "${ENVOY_DOCKER_OPTIONS[@]}" \
     -v "${ENVOY_DOCKER_BUILD_DIR}":"${BUILD_DIR_MOUNT_DEST}" \
     -v "${SOURCE_DIR}":"${SOURCE_DIR_MOUNT_DEST}" \

@@ -71,24 +71,25 @@ LuaVirtualMachine::LuaVirtualMachine(const std::string& vm_id, const std::string
     throw LuaException(fmt::format("failed to add package path {}", package_path));
   }
 
-  registerType<Envoy::Extensions::Filters::Common::Lua::BufferWrapper>();
+  registerType<Envoy::Extensions::Filters::Common::Lua::BufferWrapper>(state);
 
   initializeCallInAPIs(state);
 }
 
 PluginHandleSharedPtr LuaVirtualMachine::startPlugin(PluginSharedPtr plugin) {
   auto lua_thread = std::make_shared<LuaThread>(this->shared_from_this());
-  // TODO(Tong Cai): check emplace result.
-  auto it = root_contexts_.emplace(plugin->key(),
-                                   std::make_unique<ContextBase>(lua_thread.get(), plugin));
 
-  auto plugin_handle = lua_thread->startPlugin(plugin);
+  auto context_base = std::make_shared<ContextBase>(lua_thread, plugin);
 
-  it.first->second->onConfigure(*plugin_handle);
+  auto plugin_handle = lua_thread->startPluginHandle(plugin, context_base);
+
+  context_base->onConfigure(*plugin_handle);
   return plugin_handle;
 }
 
-template <class T> void LuaVirtualMachine::registerType() { T::registerType(luaState()); }
+template <class T> void LuaVirtualMachine::registerType(lua_State* state) {
+  T::registerType(state);
+}
 
 LuaThread::LuaThread(LuaVirtualMachineSharedPtr parent) : parent_(parent) {
   lua_State* new_state = lua_newthread(parent->luaState());
@@ -99,8 +100,10 @@ LuaThread::LuaThread(LuaVirtualMachineSharedPtr parent) : parent_(parent) {
   LuaUtils::setupSandbox(new_state);
 }
 
-PluginHandleSharedPtr LuaThread::startPlugin(PluginSharedPtr plugin) {
-  auto plugin_handle = std::make_shared<PluginHandle>(this->shared_from_this(), plugin);
+PluginHandleSharedPtr LuaThread::startPluginHandle(PluginSharedPtr plugin,
+                                                   std::shared_ptr<ContextBase> context_base) {
+  auto plugin_handle =
+      std::make_shared<PluginHandle>(this->shared_from_this(), plugin, context_base);
   lua_State* state = luaState();
 
   int rc = luaL_dostring(state, plugin->code().c_str());
@@ -226,7 +229,6 @@ void Coroutine::initialize(ContextBase* context, StreamDirection direction) {
 }
 
 void Coroutine::start(int function_ref, const std::function<void()>& yield_callback) {
-  ASSERT(status_ == Status::NotStarted);
 
   lua_State* state = coroutine_state_.get();
 

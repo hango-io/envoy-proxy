@@ -119,7 +119,6 @@ static void lookupPerFilterConfig(absl::string_view name, absl::optional<RoutePl
       }
     }
   }
-  return;
 }
 
 Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap& headers, bool end_stream) {
@@ -295,14 +294,7 @@ Http::FilterDataStatus Filter::doData(StreamWrapper& stream_wrapper, int functio
                                       Buffer::Instance& data, bool end_stream) {
   Http::FilterDataStatus status = Http::FilterDataStatus::Continue;
 
-  try {
-    status = stream_wrapper.onData(function_ref, data, end_stream);
-  } catch (const LuaException& e) {
-    absl::string_view plugin_name = config_.pluginName();
-    ENVOY_LOG(error, "run plugin {} error: {}", plugin_name, e.what());
-    error_ = true;
-    status = Http::FilterDataStatus::Continue;
-  }
+  status = stream_wrapper.onData(function_ref, data, end_stream);
 
   return status;
 }
@@ -324,12 +316,7 @@ void Filter::log(spdlog::level::level_enum level, const char* message) {
   case spdlog::level::err:
     ENVOY_LOG(error, "script log: {}", message);
     return;
-  case spdlog::level::critical:
-    ENVOY_LOG(critical, "script log: {}", message);
-    return;
-  case spdlog::level::off:
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
-  case spdlog::level::n_levels:
+  default:
     NOT_REACHED_GCOVR_EXCL_LINE;
   }
 }
@@ -450,7 +437,7 @@ const char* Filter::downstreamLocalAddress() {
 
   auto addr =
       decoder_callbacks_.callbacks_->streamInfo().downstreamAddressProvider().localAddress();
-  if (addr.get()) {
+  if (addr != nullptr) {
     return addr->asString().c_str();
   }
   return nullptr;
@@ -461,7 +448,7 @@ const char* Filter::downstreamRemoteAddress() {
 
   auto addr =
       decoder_callbacks_.callbacks_->streamInfo().downstreamAddressProvider().remoteAddress();
-  if (addr.get()) {
+  if (addr != nullptr) {
     return addr->asString().c_str();
   }
 
@@ -891,24 +878,11 @@ Http::FilterDataStatus StreamWrapper::onData(Buffer::Instance& data, bool end_st
   end_stream_ = end_stream;
   saw_body_ = true;
 
-  if (state_ == State::WaitForBodyChunk) {
-    ENVOY_LOG(trace, "resuming for next body chunk");
-    Envoy::Extensions::Filters::Common::Lua::LuaDeathRef<
-        Envoy::Extensions::Filters::Common::Lua::BufferWrapper>
-        wrapper(Envoy::Extensions::Filters::Common::Lua::BufferWrapper::create(
-                    coroutine_.luaState(), *headers_, data),
-                true);
-    state_ = State::Running;
-    coroutine_.resume(0, yield_callback_);
-  } else if (state_ == State::WaitForBody && end_stream_) {
+  if (state_ == State::WaitForBody && end_stream_) {
     ENVOY_LOG(debug, "resuming body due to end stream");
     filter_callbacks_.addData(data);
     state_ = State::Running;
     coroutine_.resume(luaBody(coroutine_.luaState()), yield_callback_);
-  } else if (state_ == State::WaitForTrailers && end_stream_) {
-    ENVOY_LOG(debug, "resuming nil trailers due to end stream");
-    state_ = State::Running;
-    coroutine_.resume(0, yield_callback_);
   }
 
   if (state_ == State::HttpCall || state_ == State::WaitForBody) {

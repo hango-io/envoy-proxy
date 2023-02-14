@@ -62,7 +62,6 @@ public:
    * error is for Lua plugin to notify host that there is a error, rest of the code
    * should be skipped.
    */
-  virtual void error(const char* message) PURE;
   virtual void log(spdlog::level::level_enum level, const char* message) PURE;
   virtual uint32_t getLogLevel() PURE;
   virtual uint64_t getCurrentTimeMilliseconds() PURE;

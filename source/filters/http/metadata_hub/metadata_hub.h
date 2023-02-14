@@ -13,8 +13,6 @@
 #include "envoy/stats/scope.h"
 #include "envoy/stats/stats_macros.h"
 
-#include "source/common/buffer/watermark_buffer.h"
-#include "source/common/common/token_bucket_impl.h"
 #include "source/common/filter_state/plain_state.h"
 #include "source/common/metadata/typed_metadata.h"
 #include "source/extensions/filters/http/common/pass_through_filter.h"
@@ -63,6 +61,19 @@ public:
 
 private:
   MetadataHubCommonConfig* config_{nullptr};
+};
+
+class TypedMetadataFactory : public Envoy::Router::HttpRouteTypedMetadataFactory {
+public:
+  std::string name() const override { return HttpMetadataHubFilter::name(); }
+  std::unique_ptr<const Envoy::Config::TypedMetadata::Object>
+  parse(const ProtobufWkt::Struct& data) const override {
+    return std::make_unique<Common::Metadata::MetadataToSimpleMap>(data);
+  }
+  std::unique_ptr<const Envoy::Config::TypedMetadata::Object>
+  parse(const ProtobufWkt::Any&) const override {
+    return nullptr;
+  }
 };
 
 } // namespace MetadataHub

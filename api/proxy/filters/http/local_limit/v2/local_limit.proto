@@ -33,11 +33,16 @@ import "api/proxy/common/matcher/v3/matcher.proto";
 //     rate: 1000
 
 // 秒、分、时、天
-enum UnitType { SS = 0; MM = 1; HH = 2; DD = 3; }
+enum UnitType {
+  SS = 0;
+  MM = 1;
+  HH = 2;
+  DD = 3;
+}
 
 message RateLimitConfig {
   UnitType unit = 1;
-  uint64 rate = 2 [(validate.rules).uint64 = {gt : 1}];
+  uint64 rate = 2 [(validate.rules).uint64 = {gt: 1}];
 }
 
 message CommonRateLimit {
@@ -47,7 +52,8 @@ message CommonRateLimit {
 }
 
 // Listener http filters config.
-message ProtoCommonConfig {}
+message ProtoCommonConfig {
+}
 
 message ProtoRouteConfig {
   // local limit 目前使用 Token Bucket 来实现限流。默认通过锁机制来保证 Token Bucket

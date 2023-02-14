@@ -1,9 +1,10 @@
-
 #include "source/filters/access_log/escape_filter/escape_filter.h"
+
+#include "envoy/registry/registry.h"
+
 #include "source/common/common/proxy_utility.h"
 #include "source/common/config/utility.h"
 #include "source/common/protobuf/message_validator_impl.h"
-#include "envoy/registry/registry.h"
 
 namespace Envoy {
 namespace Proxy {

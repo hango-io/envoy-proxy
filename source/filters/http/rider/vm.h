@@ -31,22 +31,22 @@ class LuaVirtualMachine : public std::enable_shared_from_this<LuaVirtualMachine>
 public:
   LuaVirtualMachine() = default;
   LuaVirtualMachine(const std::string& vm_id, const std::string& package_path);
-  virtual ~LuaVirtualMachine(){};
+  virtual ~LuaVirtualMachine() = default;
+  ;
 
-  virtual std::string vm_id() const { return vm_id_; }
+  virtual std::string vmId() const { return vm_id_; }
 
-  virtual std::unique_ptr<Coroutine> createCoroutine() { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; };
+  virtual std::unique_ptr<Coroutine> createCoroutine() { NOT_REACHED_GCOVR_EXCL_LINE; };
 
   virtual lua_State* luaState() { return state_.get(); }
 
   virtual PluginHandleSharedPtr startPlugin(PluginSharedPtr plugin);
 
 private:
-  template <class T> void registerType();
+  template <class T> void registerType(lua_State* state);
 
   const std::string vm_id_;
   CSmartPtr<lua_State, lua_close> state_;
-  std::unordered_map<std::string, std::unique_ptr<ContextBase>> root_contexts_;
 };
 
 using LuaVirtualMachineSharedPtr = std::shared_ptr<LuaVirtualMachine>;
@@ -55,7 +55,8 @@ class LuaThread : public LuaVirtualMachine {
 public:
   LuaThread(LuaVirtualMachineSharedPtr parent);
 
-  PluginHandleSharedPtr startPlugin(PluginSharedPtr plugin) override;
+  PluginHandleSharedPtr startPluginHandle(PluginSharedPtr plugin,
+                                          std::shared_ptr<ContextBase> context_base);
 
   std::unique_ptr<Coroutine> createCoroutine() override;
 

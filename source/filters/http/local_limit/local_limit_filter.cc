@@ -1,8 +1,10 @@
 #include "source/filters/http/local_limit/local_limit_filter.h"
-#include "envoy/common/exception.h"
-#include "source/common/common/assert.h"
 
+#include "envoy/common/exception.h"
+
+#include "source/common/common/assert.h"
 #include "source/common/http/utility.h"
+
 namespace Envoy {
 namespace Proxy {
 namespace HttpFilters {
@@ -10,13 +12,13 @@ namespace LocalLimit {
 
 bool RateLimitEntry::limit(const Http::HeaderMap& headers) const {
   if (!Http::HeaderUtility::matchHeaders(headers, enable_rqx_)) {
-    // When the conditions do not match,the current entry does not restrict the request
+    // 条件不匹配，当前 Entry 不对该请求进行限制。
     return false;
   }
 
   uint64_t token = token_bucket_ptr_->consume(1, false);
 
-  // If cannot consume enough tokens,it means that need to limit current
+  // 如果无法消费足够 token，则说明需要进行限流
   return token < 1;
 }
 

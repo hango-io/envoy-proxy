@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package proxy.bridge.dubbo.simple.v3;
+
+option java_package = "proxy.bridge.dubbo.simple.v3";
+option java_outer_classname = "ProxyBridgeDubboSimpleV3";
+option java_multiple_files = true;
+
+message ArgumentGetterConfig {
+}
+message ResponseGetterConfig {
+}

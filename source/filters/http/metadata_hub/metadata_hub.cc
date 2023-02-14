@@ -13,19 +13,6 @@ namespace Proxy {
 namespace HttpFilters {
 namespace MetadataHub {
 
-class TypedMetadataFactory : public Envoy::Router::HttpRouteTypedMetadataFactory {
-public:
-  std::string name() const override { return HttpMetadataHubFilter::name(); }
-  std::unique_ptr<const Envoy::Config::TypedMetadata::Object>
-  parse(const ProtobufWkt::Struct& data) const override {
-    return std::make_unique<Common::Metadata::MetadataToSimpleMap>(data);
-  }
-  std::unique_ptr<const Envoy::Config::TypedMetadata::Object>
-  parse(const ProtobufWkt::Any&) const override {
-    return nullptr;
-  }
-};
-
 static Registry::RegisterFactory<TypedMetadataFactory, Envoy::Router::HttpRouteTypedMetadataFactory>
     register_;
 
@@ -35,7 +22,7 @@ void MetadataHubCommonConfig::handleDecodeHeaders(Http::LowerCaseString&& name,
   decode_headers_to_state_.push_back(
       {std::move(rename), [n = std::move(name)](Http::RequestHeaderMap& h) -> absl::string_view {
          auto result = h.get(n);
-         return result.empty() ? result[0]->value().getStringView() : "";
+         return !result.empty() ? result[0]->value().getStringView() : "";
        }});
 }
 
@@ -45,7 +32,7 @@ void MetadataHubCommonConfig::handleEncodeHeaders(Http::LowerCaseString&& name,
   encode_headers_to_state_.push_back(
       {std::move(rename), [n = std::move(name)](Http::ResponseHeaderMap& h) -> absl::string_view {
          auto result = h.get(n);
-         return result.empty() ? result[0]->value().getStringView() : "";
+         return !result.empty() ? result[0]->value().getStringView() : "";
        }});
 }
 

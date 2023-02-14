@@ -5,7 +5,7 @@
 
 #include "source/common/common/logger.h"
 
-#include "rdkafkacpp.h"
+#include "librdkafka/rdkafkacpp.h"
 
 namespace Envoy {
 namespace Proxy {

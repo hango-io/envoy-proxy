@@ -8,6 +8,7 @@
 #include "source/common/http/utility.h"
 #include "source/common/protobuf/utility.h"
 #include "source/extensions/filters/common/lua/wrappers.h"
+#include "source/extensions/filters/http/common/pass_through_filter.h"
 #include "source/filters/http/rider/context.h"
 #include "source/filters/http/rider/vm.h"
 
@@ -189,7 +190,7 @@ private:
 
 using StreamWrapperPtr = std::unique_ptr<StreamWrapper>;
 
-class Filter : public ContextBase, public Http::StreamFilter {
+class Filter : public ContextBase, public Envoy::Http::PassThroughFilter {
 public:
   Filter(Config& config)
       : ContextBase(this, config.pluginHandle().vm(), config.plugin()), config_(config) {
@@ -215,26 +216,15 @@ public:
   Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap& headers,
                                           bool end_stream) override;
   Http::FilterDataStatus decodeData(Buffer::Instance& data, bool end_stream) override;
-  Http::FilterTrailersStatus decodeTrailers(Http::RequestTrailerMap&) override {
-    return Http::FilterTrailersStatus::Continue;
-  }
+
   void setDecoderFilterCallbacks(Http::StreamDecoderFilterCallbacks& callbacks) override {
     decoder_callbacks_.callbacks_ = &callbacks;
   }
 
   // Http::StreamEncoderFilter
-  Http::FilterHeadersStatus encode1xxHeaders(Http::ResponseHeaderMap&) override {
-    return Http::FilterHeadersStatus::Continue;
-  }
   Http::FilterHeadersStatus encodeHeaders(Http::ResponseHeaderMap& headers,
                                           bool end_stream) override;
   Http::FilterDataStatus encodeData(Buffer::Instance& data, bool end_stream) override;
-  Http::FilterTrailersStatus encodeTrailers(Http::ResponseTrailerMap&) override {
-    return Http::FilterTrailersStatus::Continue;
-  };
-  Http::FilterMetadataStatus encodeMetadata(Http::MetadataMap&) override {
-    return Http::FilterMetadataStatus::Continue;
-  }
   void setEncoderFilterCallbacks(Http::StreamEncoderFilterCallbacks& callbacks) override {
     encoder_callbacks_.callbacks_ = &callbacks;
   };

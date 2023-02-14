@@ -1,4 +1,4 @@
-#include "common/stats/rolling_number.h"
+#include "source/common/stats/rolling_number.h"
 
 namespace Envoy {
 namespace Proxy {

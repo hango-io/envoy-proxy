@@ -1,5 +1,6 @@
 load(
     "@bazel_tools//tools/build_defs/repo:git.bzl",
+    "git_repository",
     "new_git_repository",
 )
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
@@ -26,13 +27,21 @@ def _repository_impl(name, **kwargs):
         )
 
     if "commit" in location:
-        # Git repository at given commit ID. Add a BUILD file if requested.
-        new_git_repository(
-            name = name,
-            remote = location["remote"],
-            commit = location["commit"],
-            **kwargs
-        )
+        # Git repository at given commit ID.
+        if "build_file" in kwargs or "build_file_content" in kwargs:
+            new_git_repository(
+                name = name,
+                remote = location["remote"],
+                commit = location["commit"],
+                **kwargs
+            )
+        else:
+            git_repository(
+                name = name,
+                remote = location["remote"],
+                commit = location["commit"],
+                **kwargs
+            )
     elif "single_include" in location:
         http_file(
             name = name,
@@ -49,16 +58,20 @@ def _repository_impl(name, **kwargs):
             **kwargs
         )
 
-def envoy_netease_dependencies():
-    _repository_impl(
-        "com_github_edenhill_librdkafka",
-        build_file = "@envoy_netease//bazel/external:librdkafka.BUILD",
-    )
+def envoy_proxy_dependencies():
     _repository_impl(
         "com_github_redis_hiredis",
-        build_file = "@envoy_netease//bazel/external:hiredis.BUILD",
+        build_file = "@envoy_proxy//bazel/external:hiredis.BUILD",
     )
     _repository_impl(
         "com_github_sewenew_redisplusplus",
-        build_file = "@envoy_netease//bazel/external:redisplus.BUILD",
+        build_file = "@envoy_proxy//bazel/external:redisplus.BUILD",
+    )
+    _repository_impl(
+        "com_github_pantor_inja",
+        build_file = "@envoy_proxy//bazel/external:pantor_inja.BUILD",
+    )
+    _repository_impl(
+        "com_github_spiderlabs_libmodsecurity",
+        build_file = "@envoy_proxy//bazel/external:libmodsecurity.BUILD",
     )

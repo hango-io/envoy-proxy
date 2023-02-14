@@ -12,9 +12,11 @@ message EscapeConfig {
   oneof to_escape {
     option (validate.required) = true;
 
-    string rqx_header = 1 [ (validate.rules).string.min_bytes = 1 ];
-    string rpx_header = 2 [ (validate.rules).string.min_bytes = 1 ];
+    string rqx_header = 1 [(validate.rules).string.min_bytes = 1];
+    string rpx_header = 2 [(validate.rules).string.min_bytes = 1];
   }
 }
 
-message ProtoConfig { repeated EscapeConfig to_escapes = 1; }
+message ProtoConfig {
+  repeated EscapeConfig to_escapes = 1;
+}

@@ -1,4 +1,5 @@
 #include "source/common/filter_state/plain_state.h"
+
 #include "source/common/common/proxy_utility.h"
 
 namespace Envoy {

@@ -1,8 +1,10 @@
 #pragma once
-#include <string>
 #include <memory>
+#include <string>
+
+#include "source/common/http/message_impl.h"
+
 #include "absl/strings/string_view.h"
-#include "common/http/message_impl.h"
 
 namespace Envoy {
 namespace Proxy {
@@ -26,6 +28,7 @@ enum class Direction {
 
 // 一些工具函数
 Envoy::Http::ResponseMessagePtr makeMessageCopy(const Envoy::Http::ResponseMessagePtr& message);
+Envoy::Http::RequestMessagePtr makeMessageCopy(const Envoy::Http::RequestMessagePtr& message);
 
 } // namespace Http
 } // namespace Common

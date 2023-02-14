@@ -11,7 +11,7 @@
         "method": "GET",
         "headers": {
           "my-custom-header": "127.0.0.13",
-          "host": "one.netease.com"
+          "host": "one.proxy.com"
         }
       },
       "response": {
@@ -26,7 +26,7 @@
         "method": "GET",
         "headers": {
           "my-custom-header": "8.8.8.7",
-          "host": "one.netease.com"
+          "host": "one.proxy.com"
         }
       },
       "response": {
@@ -40,7 +40,7 @@
         "req_url": "http://localhost:8080/anything",
         "method": "GET",
         "headers": {
-          "host": "one.netease.com",
+          "host": "one.proxy.com",
           "my-custom-header": "8.8.8.6"
         }
       },
@@ -55,7 +55,7 @@
         "req_url": "http://localhost:8080/anything",
         "method": "GET",
         "headers": {
-          "host": "one.netease.com",
+          "host": "one.proxy.com",
           "my-custom-header": "1.1.1.1"
         }
       },
@@ -69,7 +69,7 @@
         "req_url": "http://localhost:8080/anything",
         "method": "GET",
         "headers": {
-          "host": "two.netease.com",
+          "host": "two.proxy.com",
           "my-custom-header": "127.0.0.13"
         }
       },
@@ -83,7 +83,7 @@
         "req_url": "http://localhost:8080/anything",
         "method": "GET",
         "headers": {
-          "host": "two.netease.com",
+          "host": "two.proxy.com",
           "my-custom-header": "8.8.8.7"
         }
       },
@@ -97,7 +97,7 @@
         "req_url": "http://localhost:8080/anything",
         "method": "GET",
         "headers": {
-          "host": "two.netease.com",
+          "host": "two.proxy.com",
           "my-custom-header": "8.8.8.6"
         }
       },
@@ -111,7 +111,7 @@
         "req_url": "http://localhost:8080/anything",
         "method": "GET",
         "headers": {
-          "host": "two.netease.com",
+          "host": "two.proxy.com",
           "my-custom-header": "1.1.1.1"
         }
       },

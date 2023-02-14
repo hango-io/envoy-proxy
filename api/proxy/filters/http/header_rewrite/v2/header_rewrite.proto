@@ -1,0 +1,109 @@
+
+syntax = "proto3";
+
+package proxy.filters.http.header_rewrite.v2;
+
+option java_package = "proxy.filters.http.header_rewrite.v2";
+option java_outer_classname = "HeaderRewriteProto";
+option java_multiple_files = true;
+
+import "api/proxy/common/matcher/v3/matcher.proto";
+
+import "google/protobuf/empty.proto";
+
+import "validate/validate.proto";
+
+message Extractor {
+  oneof source {
+    option (validate.required) = true;
+
+    // 指定请求或者响应 header 名称。
+    string header_name = 1;
+
+    // path 和 parameter 都可以直接从 Header 中提取，但是需要编写相对较为复杂的正则表达式
+    // 才能提取预期的数据，增大出错的可能性。故而单独暴露 path 和 parameter 字段。
+    google.protobuf.Empty path = 2;
+    string parameter = 4;
+
+    // 从环境变量中提取数据
+    string environment = 5;
+  }
+
+  // 使用正则表达式来从上述提取的内容中进一步获取某个子集。为了保证性能和内存安全，请不要使用过于复杂
+  // 的正则表达式。
+  string regex = 6;
+  uint32 group = 7;
+}
+
+message Rewriter {
+  oneof target {
+    option (validate.required) = true;
+
+    // 指定请求或者响应 header 名称。
+    string header_name = 1;
+
+    // path 和 parameter 都可以通过 Header 操作和更新。但是，但是需要编写相对较为复杂的正则
+    // 表达式才能提取预期的数据，增大出错的可能性。故而单独暴露 path 和 parameter 字段。
+    google.protobuf.Empty path = 2;
+    string parameter = 3;
+  }
+
+  oneof operation {
+    option (validate.required) = true;
+
+    // 更新 target 中指定元素。
+    string update = 4;
+
+    // 添加 target 中指定元素，注意和 update 的区别。当 target 为 *_header，若对应 target 不存在，
+    // 会添加新的 header。如果 target 存在，则会为同名 header 追加一个值。当 target 为 parameter，
+    // 若对应 target 不存在，则会直接在原来的值之后追加。多个值之间使用 ';' 分隔。当 target 为
+    // path， 假设 append 值为 'xxxxxx'，原始 path 为 ‘/abc/efg/hijk’，则更新后为
+    // '/abc/efg/hijkxxxxxx'
+    string append = 5;
+
+    // 如果 target 为 *_header 或者 parameter，且对应 target 存在，则删除对应的 target。如果 target
+    // 为 path，不可操作。
+    google.protobuf.Empty remove = 6;
+  }
+
+  // 匹配条件通过才允许 header rewrite。可以缺省，缺省时直接进行 header rewrite。
+  proxy.common.matcher.v3.CommonMatcher matcher = 7;
+}
+
+message ExtractorRewriter {
+  map<string, Extractor> extractors = 1;
+
+  repeated Rewriter rewriters = 2;
+}
+
+message HeaderRewrite {
+  ExtractorRewriter decoder_rewriters = 1;
+
+  ExtractorRewriter encoder_rewriters = 2;
+
+  bool clear_route_cache = 3;
+}
+
+/*
+ * 全局 rewrite 配置。配置在 HCM http_filters 中。默认会对所有请求生效。可以缺省。一般来说此处应当是
+ * 是包含一些全局生效的重写配置。
+ * **注意，该配置不会被路由中配置所覆盖。会在执行全局配置中重写后，再执行路由配置中重写操作**
+ */
+message ProtoCommonConfig {
+  HeaderRewrite config = 1;
+}
+
+/*
+ * 路由 rewrite 配置。配置在 virtualhost 中和 route 当中。但是只有最为精确的配置会生效。和全局配置的
+ * 作用顺序是：先执行全局配置中定义的重写操作，之后执行该配置中的相关重写操作。
+ */
+message ProtoRouteConfig {
+  oneof override {
+    option (validate.required) = true;
+
+    HeaderRewrite config = 1;
+
+    // 在当前路由上禁用该插件，所有重写不生效。
+    bool disabled = 2 [(validate.rules).bool = {const: true}];
+  }
+}

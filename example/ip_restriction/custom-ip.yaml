@@ -17,7 +17,7 @@ static_resources:
                     # 黑名单测试
                     - name: host-one
                       domains:
-                        - "one.netease.com"
+                        - "one.proxy.com"
                       routes:
                         - match:
                             prefix: "/"
@@ -35,7 +35,7 @@ static_resources:
                     # 白名单测试
                     - name: host-two
                       domains:
-                        - "two.netease.com"
+                        - "two.proxy.com"
                       routes:
                         - match:
                             prefix: "/"
@@ -59,8 +59,7 @@ static_resources:
                       # ip_source_header用于指定黑白名单插件
                       # 从某个特定header获取并解析ip
                       ip_source_header: my-custom-header
-                  - name: envoy.filters.http.router
-                    typed_config: {}
+                  - name: envoy.router
   clusters:
     - name: httpbin
       connect_timeout: 5s

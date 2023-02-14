@@ -15,13 +15,13 @@ MetadataToSimpleMap::MetadataToSimpleMap(const ProtobufWkt::Struct& data) {
   for (const auto& pair : data.fields()) {
     std::string field_string;
     switch (pair.second.kind_case()) {
-    case Protobuf::Value::KindCase::kBoolValue:
+    case ProtobufWkt::Value::KindCase::kBoolValue:
       field_string = pair.second.bool_value() ? "true" : "false";
       break;
-    case Protobuf::Value::KindCase::kStringValue:
+    case ProtobufWkt::Value::KindCase::kStringValue:
       field_string = pair.second.string_value();
       break;
-    case Protobuf::Value::KindCase::kNumberValue:
+    case ProtobufWkt::Value::KindCase::kNumberValue:
       field_string = doubleToString(pair.second.number_value());
       break;
     default:

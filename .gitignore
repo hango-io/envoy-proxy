@@ -1,7 +1,6 @@
 bazel-*
 generated
-envoy.stripped
-.vscode/
+.vscode
 *.pyc
 .config
 cscope*
@@ -9,6 +8,10 @@ tags
 *__pycache__*
 clang.bazelrc
 additional_distfiles
-.clang*
+.clang.bazelrc
+clang-tidy-*
 compile_commands.json
 source/extensions.bzl
+linux
+.idea
+.cache

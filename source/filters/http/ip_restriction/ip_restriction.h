@@ -7,19 +7,16 @@
 #include <vector>
 
 #include "envoy/http/filter.h"
-#include "envoy/runtime/runtime.h"
 #include "envoy/server/filter_config.h"
 #include "envoy/stats/scope.h"
 #include "envoy/stats/stats_macros.h"
 
-#include "source/extensions/filters/http/common/pass_through_filter.h"
-
-#include "api/proxy/filters/http/ip_restriction/v2/ip_restriction.pb.h"
-#include "source/common/buffer/watermark_buffer.h"
-#include "source/common/common/token_bucket_impl.h"
 #include "source/common/http/header_utility.h"
 #include "source/common/network/cidr_range.h"
 #include "source/common/singleton/const_singleton.h"
+#include "source/extensions/filters/http/common/pass_through_filter.h"
+
+#include "api/proxy/filters/http/ip_restriction/v2/ip_restriction.pb.h"
 
 namespace Envoy {
 namespace Proxy {
@@ -58,8 +55,8 @@ public:
 private:
   bool isBlackList_;
   std::unordered_set<uint32_t> rawIpV4;
-  // absl::uint128 cannot be placed in unordered_set,so currently use string processing ipv6
-  // To be optimized
+  // absl:uint128无法存放进入unordered_set，目前使用字符串处理v6 ip
+  // 有待优化
   std::unordered_set<std::string> rawIpV6;
 
   std::vector<Network::Address::CidrRange> cidrIpV4_;
