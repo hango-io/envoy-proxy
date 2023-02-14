@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include "common/common/logger.h"
+#include "source/common/common/logger.h"
 
 #include "src/sw/redis++/redis++.h"
 
@@ -38,12 +38,12 @@ class RedisClient : public Logger::Loggable<Logger::Id::client> {
   using NodeList = std::vector<std::pair<std::string, int>>;
 
 public:
-  RedisClient(const ClientOptions &options);
+  RedisClient(const ClientOptions& options);
 
-  void command(const std::vector<std::string> &args);
+  void command(const std::vector<std::string>& args);
 
 private:
-  void parseRedisNodes(const std::string &src, std::vector<std::pair<std::string, int>> &dst);
+  void parseRedisNodes(const std::string& src, std::vector<std::pair<std::string, int>>& dst);
   void connectToGeneral();
 
 private:

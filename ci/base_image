@@ -1,0 +1,53 @@
+#! /bin/bash
+
+set -e
+
+RIDER_REPOSITORY_COM=${RIDER_REPOSITORY_COM:-"397392d743656d19ef61ea3be846ce5d654eadd0"}
+RIDER_REPOSITORY_URL=${RIDER_REPOSITORY_URL:-"https://github.com/hango-io/rider/archive/${RIDER_REPOSITORY_COM}.tar.gz"}
+
+NONCE="3"
+
+# Set base image tag with versions of agent/rider automatically.
+BASE_IMAGE_TAG=${RIDER_REPOSITORY_COM:0:10}-${NONCE}
+BASE_IMAGE_HUB=${ENVOY_PROXY_IMAGE_HUB:?}/envoy-base
+
+CI_PIPELINE=${CI_PIPELINE:-"false"}
+
+function build_base_image() {
+    local IMAGE_BUILD_PATH
+    IMAGE_BUILD_PATH=$(pwd)/generated/base_image_build/multiple_arch
+    mkdir -p "${IMAGE_BUILD_PATH}"
+    rm -rf "${IMAGE_BUILD_PATH:?}"/*
+
+    cp ci/base_image.Dockerfile "${IMAGE_BUILD_PATH}"/Dockerfile
+
+    pushd "${IMAGE_BUILD_PATH}"
+
+    wget "${RIDER_REPOSITORY_URL}" -O rider.tar.gz
+    mkdir rider && tar -xzf rider.tar.gz -C rider --strip-components 1
+
+    local IMAGE_NAME
+    IMAGE_NAME="${BASE_IMAGE_HUB}":"${BASE_IMAGE_TAG}"
+
+    export DOCKER_CLI_EXPERIMENTAL=enabled
+    # Ensure the QEMU is installed and buildx driver is enabled.
+    # NOTE: following two commands are necessary to make sure we can speficify
+    # the image arch based on the '-arm64'/'-amd64' suffix.
+    docker buildx build --push --platform linux/amd64 -t "${IMAGE_NAME}-amd64" .
+    docker buildx build --push --platform linux/arm64 -t "${IMAGE_NAME}-arm64" .
+
+    popd
+}
+
+if [[ $# -lt 1 ]]; then
+    IMAGE_NAME="${BASE_IMAGE_HUB}":"${BASE_IMAGE_TAG}"
+    echo "${IMAGE_NAME}"
+    exit 0
+fi
+
+if [[ $1 != "build_base_image" ]]; then
+    echo "Please confirm your action by set first argument to 'build_base_image'"
+    exit 1
+fi
+
+build_base_image

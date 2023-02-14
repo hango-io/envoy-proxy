@@ -1,4 +1,3 @@
-
 **基于开源网络代理 [Envoy Proxy](https://github.com/envoyproxy/envoy) 构建的高性能网关数据面。**
 
 ## 构建

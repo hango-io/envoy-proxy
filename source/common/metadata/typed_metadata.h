@@ -3,9 +3,9 @@
 #include <map>
 #include <string>
 
-#include "source/common/protobuf/protobuf.h"
-
 #include "envoy/config/typed_metadata.h"
+
+#include "source/common/protobuf/protobuf.h"
 
 namespace Envoy {
 namespace Proxy {

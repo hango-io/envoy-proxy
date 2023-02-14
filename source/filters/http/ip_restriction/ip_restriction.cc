@@ -12,7 +12,7 @@ namespace Proxy {
 namespace HttpFilters {
 namespace IpRestriction {
 
-// used to match the IP in the configuration file to ensure that the IP format is correct
+// 用于匹配配置文件中IP，保证IP格式正确
 const std::regex BlackOrWhiteListConfig::REGEXIPV4 =
     std::regex("^((25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(25[0-5]|2[0-4]\\d|["
                "01]?\\d\\d?)$");
@@ -30,7 +30,7 @@ ListGlobalConfig::ListGlobalConfig(
     : ip_source_header_(config.ip_source_header()),
       stats_(generateStats(stats_prefix, context.scope())), scope_(context.scope()) {}
 
-// Initialize the configuration class using the configuration type defined in the proto file
+// 使用proto文件中定义的配置类型初始化配置类
 BlackOrWhiteListConfig::BlackOrWhiteListConfig(
     const proxy::filters::http::iprestriction::v2::BlackOrWhiteList& list) {
   switch (list.type()) {
@@ -101,7 +101,7 @@ void BlackOrWhiteListConfig::parseIpEntry(const std::string& entry) {
   }
 }
 
-// Determine whether the input address exists in the record
+// 判断输入地址是否存在于记录中
 bool BlackOrWhiteListConfig::checkIpEntry(const Network::Address::Instance* address) const {
   switch (address->ip()->version()) {
   case Network::Address::IpVersion::v4:
@@ -126,7 +126,7 @@ bool BlackOrWhiteListConfig::checkIpEntry(const Network::Address::Instance* addr
 }
 
 bool BlackOrWhiteListConfig::isAllowed(const Network::Address::Instance* address) const {
-  // List type（black or white） and check result jointly determine whether to release the IP
+  // 名单类型（black or white）和check结果共同决定是否放行IP
   // return checkIpEntry(address) != isBlackList_;
   auto result = checkIpEntry(address);
   return ((result && (!isBlackList_)) || ((!result) && isBlackList_));

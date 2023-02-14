@@ -47,7 +47,7 @@ static_resources:
                     filename: /path/to/rider/plugins/test/fun_test_v2.lua
                 name: fun_test_v2
 
-          - name: envoy.filters.http.router
+          - name: envoy.router
             typed_config: {}
 
   clusters:

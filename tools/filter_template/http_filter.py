@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 HTTP_FILTER_CONFIG_CC_T = """
-#include "filters/http/${SNAKE_CASE_NAME}/config.h"
+#include "source/filters/http/${SNAKE_CASE_NAME}/config.h"
 
 namespace Envoy {
 namespace Proxy {
@@ -40,9 +40,9 @@ HTTP_FILTER_CONFIG_H_T = """
 
 #include "envoy/registry/registry.h"
 
-#include "extensions/filters/http/common/factory_base.h"
+#include "source/extensions/filters/http/common/factory_base.h"
 
-#include "filters/http/${SNAKE_CASE_NAME}/${SNAKE_CASE_NAME}.h"
+#include "source/filters/http/${SNAKE_CASE_NAME}/${SNAKE_CASE_NAME}.h"
 
 #include "api/proxy/filters/http/${SNAKE_CASE_NAME}/v2/${SNAKE_CASE_NAME}.pb.h"
 #include "api/proxy/filters/http/${SNAKE_CASE_NAME}/v2/${SNAKE_CASE_NAME}.pb.validate.h"
@@ -77,7 +77,7 @@ private:
 """
 
 HTTP_FILTER_FILTER_CC_T = """
-#include "filters/http/${SNAKE_CASE_NAME}/${SNAKE_CASE_NAME}.h"
+#include "source/filters/http/${SNAKE_CASE_NAME}/${SNAKE_CASE_NAME}.h"
 
 namespace Envoy {
 namespace Proxy {
@@ -109,7 +109,7 @@ HTTP_FILTER_FILTER_H_T = """
 #include "envoy/http/filter.h"
 #include "envoy/server/filter_config.h"
 
-#include "extensions/filters/http/common/pass_through_filter.h"
+#include "source/extensions/filters/http/common/pass_through_filter.h"
 
 #include "api/proxy/filters/http/${SNAKE_CASE_NAME}/v2/${SNAKE_CASE_NAME}.pb.h"
 

@@ -124,10 +124,91 @@ static_resources:
                                     value: wbp
                                 body:
                                   inline_string: bodybodybodybodybodybody
+                    - name: host-one # no downgrade_rpx
+                      domains:
+                        - "e.test.com"
+                      routes:
+                        - match:
+                            path: "/no/downgrade"
+                          route:
+                            cluster: cluster_no_ep
+                          typed_per_filter_config:
+                            proxy.filters.http.staticdowngrade:
+                              "@type": type.googleapis.com/proxy.filters.http.static_downgrade.v2.ProtoRouteConfig
+                              downgrade_rpx:
+                                headers:
+                                  - name: :status
+                                    exact_match: "503"
+                              response_flags: "NR"
+                              static_response:
+                                http_status: 333
+                                headers:
+                                  - key: comefrom
+                                    value: static_downgrade
+                                  - key: create
+                                    value: wbp
+                        - match:
+                            path: "/downgrade"
+                          route:
+                            cluster: cluster_no_ep
+                          typed_per_filter_config:
+                            proxy.filters.http.staticdowngrade:
+                              "@type": type.googleapis.com/proxy.filters.http.static_downgrade.v2.ProtoRouteConfig
+                              downgrade_rpx:
+                                headers:
+                                  - name: :status
+                                    exact_match: "503"
+                              response_flags: "UH"
+                              static_response:
+                                http_status: 333
+                                headers:
+                                  - key: comefrom
+                                    value: static_downgrade
+                                  - key: create
+                                    value: wbp
+                        - match:
+                            path: "/no/downgrade/for/details"
+                          route:
+                            cluster: cluster_no_ep
+                          typed_per_filter_config:
+                            proxy.filters.http.staticdowngrade:
+                              "@type": type.googleapis.com/proxy.filters.http.static_downgrade.v2.ProtoRouteConfig
+                              downgrade_rpx:
+                                headers:
+                                  - name: :status
+                                    exact_match: "503"
+                              response_code_details:
+                                exact: "xxxxxxxxx"
+                              static_response:
+                                http_status: 333
+                                headers:
+                                  - key: comefrom
+                                    value: static_downgrade
+                                  - key: create
+                                    value: wbp
+                        - match:
+                            path: "/downgrade/for/details"
+                          route:
+                            cluster: cluster_no_ep
+                          typed_per_filter_config:
+                            proxy.filters.http.staticdowngrade:
+                              "@type": type.googleapis.com/proxy.filters.http.static_downgrade.v2.ProtoRouteConfig
+                              downgrade_rpx:
+                                headers:
+                                  - name: :status
+                                    exact_match: "503"
+                              response_code_details:
+                                exact: "no_healthy_upstream"
+                              static_response:
+                                http_status: 333
+                                headers:
+                                  - key: comefrom
+                                    value: static_downgrade
+                                  - key: create
+                                    value: wbp
                 http_filters:
                   - name: proxy.filters.http.staticdowngrade
-                  - name: envoy.filters.http.router
-                    typed_config: {}
+                  - name: envoy.router
   clusters:
     - name: httpbin
       connect_timeout: 5s
@@ -141,6 +222,19 @@ static_resources:
                   address:
                     socket_address:
                       address: httpbin.org
+                      port_value: 80
+    - name: cluster_no_ep
+      connect_timeout: 5s
+      type: strict_dns
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: cluster_no_ep
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: cluster_no_ep.org
                       port_value: 80
 
 admin:

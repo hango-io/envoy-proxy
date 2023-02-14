@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package proxy.filters.http.traffic_mark.v2;
+
+option java_package = "proxy.filters.http.traffic_mark.v2";
+option java_outer_classname = "TrafficMarkProto";
+option java_multiple_files = true;
+
+import "validate/validate.proto";
+
+// Quick implementation for gateway. This should be replaced by the formatter for more common usage.
+message MetadataPath {
+  // Namespace of metadata. Typically this is filter extension qualified name, e.g.,
+  // ``envoy.filters.http.router``.
+  string metadata_namespace = 1 [(validate.rules).string.min_bytes = 1];
+  // Path of metadata value. Metadata is struct and multiple layers of nesting can be included.
+  // This path is consisted by multiple keys just like Json path.
+  repeated string path = 2 [(validate.rules).repeated .min_items = 1];
+}
+
+message ProtoCommonConfig {
+  // header_key is the Http header name from which to get color value.
+  string header_key = 1 [(validate.rules).string.min_bytes = 1];
+
+  // match_key is the key used to match upstream hosts.
+  string match_key = 2 [(validate.rules).string.min_bytes = 1];
+
+  // all_colors_key is the key from which to get all available colors in the Cluster metadata
+  string all_colors_key = 3 [(validate.rules).string.min_bytes = 1];
+
+  // Extract static metadata of route and set it to dynamic metadata undering namespace
+  // ``envoy.lb``. The map key will be used as the key, and the value of static metadata
+  // value will used the value.
+  map<string, MetadataPath> metadata_as_mark = 4;
+}
+
+message ProtoRouteConfig {
+}

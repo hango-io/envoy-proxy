@@ -39,6 +39,10 @@ envoy_cc_library(
     ],
     repository = "@envoy",
     deps = [
-        "@envoy//source/exe:envoy_common_lib",
+        "@envoy//envoy/server:filter_config_interface",
+        "@envoy//envoy/thread_local:thread_local_interface",
+        "@envoy//source/common/common:lock_guard_lib",
+        "@envoy//source/common/common:thread_lib",
+        "@envoy//source/common/common:token_bucket_impl_lib",
     ],
 )

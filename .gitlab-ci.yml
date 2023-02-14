@@ -1,36 +1,153 @@
-# This file is a template, and might need editing before it works on your project.
-# use the official gcc image, based on debian
-# can use verions as well, like gcc:5.2
-# see https://hub.docker.com/_/gcc/
-#image: gcc
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+default:
+  image: ${ENVOY_PROXY_IMAGE_HUB}/envoy-build-ubuntu:81a93046060dbe5620d5b3aa92632090a9ee4da6
+
+stages:
+  - start
+  - check
+  - test
+  - coverage
+  - build
+  - release
+
+code_format_check:
+  stage: start
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH =~ /^(master|main|release).*/
+  script:
+    - ci/do_ci.sh check_format
+  tags:
+    - envoy-proxy-git-runner
+
+merge_title_check:
+  stage: start
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+  script:
+    - FT=${CI_MERGE_REQUEST_TITLE_FORMAT:-".*"}
+    - TT=${CI_MERGE_REQUEST_TITLE}
+    - if [[ ! ${TT} =~ ${FT} ]]; then
+    -   echo "Error format for MR."
+    -   exit 1
+    - fi
+  tags:
+    - envoy-proxy-git-runner
+
+clang_tidy_check:
+  stage: start
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH =~ /^(master|main|release).*/
+  script:
+    - ci/do_ci.sh clang_tidy
+  tags:
+    - envoy-proxy-git-runner
 
 
-#image: hub.c.163.com/qingzhou/envoyproxy/envoy-build:0.23
+unit_test_check_opt:
+  stage: test
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH =~ /^(master|main|release).*/
+  script:
+    - ci/do_ci.sh unit_test_opt
+  tags:
+    - envoy-proxy-git-runner
 
-#build:
-#  stage: build
-  # instead of calling g++ directly you can also use some build toolkit like make
-  # install the necessary build tools when needed
-  # before_script:
-  #   - apt update && apt -y install make autoconf
-#  script:
-#    - make sidecar-release
-#  artifacts:
-#    paths:
-#      - source
-#  tags:
-#      - qz-gitlab-runner
+unit_test_check_dbg:
+  stage: test
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH =~ /^(master|main|release).*/
+  script:
+    - ci/do_ci.sh unit_test_dbg
+  tags:
+    - envoy-proxy-git-runner
 
+unit_test_check_asan:
+  stage: test
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH =~ /^(master|main|release).*/
+  script:
+    - ci/do_ci.sh unit_test_asan
+  tags:
+    - envoy-proxy-git-runner
 
-  # depending on your build setup it's most likely a good idea to cache outputs to reduce the build time
-  # cache:
-  #   paths:
-  #     - "*.o"
+unit_test_check_tsan:
+  stage: test
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH =~ /^(master|main|release).*/
+  script:
+    - ci/do_ci.sh unit_test_tsan
+  tags:
+    - envoy-proxy-git-runner
 
-# run tests using the binary built before
-#test:
-#  stage: test
-#  script:
-#    - make test
-#  tags:
-#    - qz-gitlab-runner
+unit_test_check_msan:
+  stage: test
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH =~ /^(master|main|release).*/
+  script:
+    - ci/do_ci.sh unit_test_msan
+  tags:
+    - envoy-proxy-git-runner
+
+unit_coverage_check:
+  stage: coverage
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH =~ /^(master|main|release).*/
+  coverage: '/lines\.{6}: (\d+(\.\d+)?%) \(.+\)/'
+  script:
+    - ci/do_ci.sh unit_coverage
+  tags:
+    - envoy-proxy-git-runner
+
+binary_build_check:
+  stage: build
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH =~ /^(master|main|release).*/
+  script:
+    - ci/do_ci.sh build_opt
+  tags:
+    - envoy-proxy-git-runner
+
+tagged_image_release_amd64:
+  image:
+    name: ${ENVOY_PROXY_IMAGE_HUB}/envoy-build-ubuntu:81a93046060dbe5620d5b3aa92632090a9ee4da6@sha256:7046e39b4e3126e442fed66d3cbf935b2a75f83c9ca0cf5b53d94190998053fe
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG != null
+  before_script:
+    - REPO=${ENVOY_PROXY_IMAGE_HUB}
+    - USER=${ENVOY_PROXY_IMAGE_HUB_USER}
+    - PASS=${ENVOY_PROXY_IMAGE_HUB_PASS}
+    - docker login "${REPO}" -u "${USER}" -p "${PASS}"
+  script:
+    - ci/docker_ci.sh stripped_opt
+    - ci/docker_ci.sh no_stripped_opt
+  tags:
+    - envoy-proxy-git-runner
+
+tagged_image_release_arm64:
+  image:
+    name: ${ENVOY_PROXY_IMAGE_HUB}/envoy-build-ubuntu:81a93046060dbe5620d5b3aa92632090a9ee4da6@sha256:fcc98dbdf7c05a9f052bc958b5419254dfb72687dd837b2380ae6b29a30b8020
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG != null
+  before_script:
+    - REPO=${ENVOY_PROXY_IMAGE_HUB}
+    - USER=${ENVOY_PROXY_IMAGE_HUB_USER}
+    - PASS=${ENVOY_PROXY_IMAGE_HUB_PASS}
+    - docker login "${REPO}" -u "${USER}" -p "${PASS}"
+  script:
+    - ci/docker_ci.sh stripped_opt
+    - ci/docker_ci.sh no_stripped_opt
+  tags:
+    - envoy-proxy-git-runner

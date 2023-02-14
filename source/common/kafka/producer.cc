@@ -11,7 +11,7 @@ KafkaProducer::KafkaProducer(const std::string& brokers, const std::string& topi
 }
 
 KafkaProducer::~KafkaProducer() {
-  if (!topic_.get() || !producer_.get()) {
+  if (topic_ == nullptr || producer_ == nullptr) {
     return;
   }
   // flush all message
@@ -23,17 +23,18 @@ KafkaProducer::~KafkaProducer() {
 
 void KafkaProducer::produce(const std::string& message) {
   // TODO no retry after init failed.
-  if (!topic_.get() || !producer_.get()) {
+  if (topic_ == nullptr || producer_ == nullptr) {
     ENVOY_LOG(debug, "No valid topic handler or producer and recreate it.");
     createProducer();
-    if (!topic_.get() || !producer_.get()) {
+    if (topic_ == nullptr || producer_ == nullptr) {
       ENVOY_LOG(error, "No valid topic handler or producer and failed to recreate it.");
       return;
     }
   }
   int32_t partition = RdKafka::Topic::PARTITION_UA;
-  auto code = producer_->produce(topic_.get(), partition, RdKafka::Producer::RK_MSG_COPY,
-                                 (void*)message.data(), message.size(), nullptr, 0, nullptr);
+  auto code =
+      producer_->produce(topic_.get(), partition, RdKafka::Producer::RK_MSG_COPY,
+                         const_cast<char*>(message.data()), message.size(), nullptr, 0, nullptr);
   if (code != RdKafka::ErrorCode::ERR_NO_ERROR) {
     ENVOY_LOG(error, "Failed send message to server. Error: {}", RdKafka::err2str(code));
   }
@@ -52,7 +53,7 @@ void KafkaProducer::createProducer() {
   conf_.reset(RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL));
   topicConf_.reset(RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
 
-  if (!conf_.get() || !topicConf_.get()) {
+  if (conf_ == nullptr || topicConf_ == nullptr) {
     ENVOY_LOG(error, "Failed create producer conf or top conf.");
     return;
   }
@@ -65,13 +66,13 @@ void KafkaProducer::createProducer() {
 
   producer_.reset(RdKafka::Producer::create(conf_.get(), errStr));
 
-  if (!producer_.get()) {
+  if (producer_ == nullptr) {
     ENVOY_LOG(error, "Failed create producer. Please check your config. Err: {}", errStr);
     return;
   }
 
   topic_.reset(RdKafka::Topic::create(producer_.get(), topic_string_, topicConf_.get(), errStr));
-  if (!topic_.get()) {
+  if (topic_ == nullptr) {
     ENVOY_LOG(error, "Fail create topic handler. Please check your config. Err: {}", errStr);
     return;
   }

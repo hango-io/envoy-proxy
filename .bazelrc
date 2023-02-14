@@ -1,13 +1,10 @@
-# Envoy-NetEase specific Bazel build/test options.
+# Envoy-Proxy specific Bazel build/test options.
 
 import %workspace%/envoy/.bazelrc
 
-# For Lua Rider.
-build --define exported_symbols=enabled
+build --workspace_status_command="bash envoy/bazel/get_workspace_status"
+build --java_runtime_version=remotejdk_11
 
-build --cxxopt -Wno-error=old-style-cast
 build:clang --cxxopt -Wno-error=old-style-cast
 build:clang --cxxopt -Wno-error=unused-private-field
-build:clang --copt "-D USE_VECTOR_MOCK_MAP"
-build:clang --cxxopt "-D USE_VECTOR_MOCK_MAP"
 build:clang --copt "-D NULL_PLUGIN"

@@ -1,8 +1,8 @@
-
 #include "source/common/common/proxy_utility.h"
+
+#include <iomanip>
 #include <sstream>
 #include <string>
-#include <iomanip>
 
 namespace Envoy {
 namespace Proxy {
@@ -42,7 +42,7 @@ std::string StringUtil::escapeForJson(const absl::string_view source) {
       break;
     default:
       if ('\x00' <= c && c <= '\x1f') {
-        o << "\\u" << std::hex << std::setw(4) << std::setfill('0') << (int)c;
+        o << "\\u" << std::hex << std::setw(4) << std::setfill('0') << static_cast<int>(c);
       } else {
         o << c;
       }
@@ -55,8 +55,7 @@ bool StringUtil::md5StringOrNot(const absl::string_view md5_string) {
   if (md5_string.size() != 32) {
     return false;
   }
-  for (size_t i = 0; i < md5_string.size(); i++) {
-    char ch = md5_string[i];
+  for (char ch : md5_string) {
     if (!(('0' <= ch && ch <= '9') || ('a' <= ch && ch <= 'f') || ('A' <= ch && ch <= 'F'))) {
       return false;
     }

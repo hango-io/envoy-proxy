@@ -19,8 +19,6 @@ namespace Proxy {
 namespace HttpFilters {
 namespace Rider {
 
-#define NOT_IMPLEMENTED_GCOVR_EXCL_LINE PANIC("not implemented")
-
 class LuaVirtualMachine;
 class Filter;
 
@@ -65,11 +63,12 @@ typedef ConstSingleton<PluginExportFunctionNameValues> PluginExportFunctionNames
 
 class PluginHandle : public ThreadLocal::ThreadLocalObject {
 public:
-  PluginHandle(std::shared_ptr<LuaVirtualMachine> vm, std::shared_ptr<Plugin> plugin);
+  PluginHandle(std::shared_ptr<LuaVirtualMachine> vm, std::shared_ptr<Plugin> plugin,
+               std::shared_ptr<ContextBase> context_base);
 
   ~PluginHandle();
 
-  LuaVirtualMachine* vm() { return vm_.get(); }
+  std::shared_ptr<LuaVirtualMachine> vm() { return vm_; }
 
   const Plugin* plugin() const { return plugin_.get(); }
 
@@ -87,6 +86,7 @@ public:
 private:
   std::shared_ptr<LuaVirtualMachine> vm_;
   std::shared_ptr<Plugin> plugin_;
+  std::shared_ptr<ContextBase> context_base_;
 
   int on_configure_ref_{LUA_NOREF};
   int on_request_ref_{LUA_NOREF};
@@ -118,138 +118,78 @@ public:
   ContextBase() {}
 
   // Root Context
-  ContextBase(LuaVirtualMachine* vm, PluginSharedPtr plugin);
+  ContextBase(std::shared_ptr<LuaVirtualMachine> vm, PluginSharedPtr plugin);
 
   // Stream Context
-  ContextBase(Filter* filter, LuaVirtualMachine* vm, PluginSharedPtr plugin);
+  ContextBase(Filter* filter, std::shared_ptr<LuaVirtualMachine> vm, PluginSharedPtr plugin);
 
   // RootInterface
   void onConfigure(PluginHandle& plugin_handle) override;
   int getConfiguration(envoy_lua_ffi_str_t* buffer) override;
 
   // GeneralInterface
-  void error(const char* message) override {
-    UNREFERENCED_PARAMETER(message);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
-  }
   void log(spdlog::level::level_enum level, const char* message) override;
   uint32_t getLogLevel() override { return static_cast<uint32_t>(ENVOY_LOGGER().level()); }
-  uint64_t getCurrentTimeMilliseconds() override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
+  uint64_t getCurrentTimeMilliseconds() override { NOT_REACHED_GCOVR_EXCL_LINE; }
 
   // StreamInterface
-  void fileLog(const char* buf, int len) override {
-    UNREFERENCED_PARAMETER(buf);
-    UNREFERENCED_PARAMETER(len);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
-  }
-  int getOrCreateSharedTable() override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
-  int getRouteConfiguration(envoy_lua_ffi_str_t* buffer) override {
-    UNREFERENCED_PARAMETER(buffer);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
-  }
-  uint64_t getRouteConfigHash() override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
-  int luaBody(lua_State* state, StreamDirection direction) override {
-    UNREFERENCED_PARAMETER(state);
-    UNREFERENCED_PARAMETER(direction);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
-  }
-  int luaHttpCall(lua_State* state, StreamDirection direction) override {
-    UNREFERENCED_PARAMETER(state);
-    UNREFERENCED_PARAMETER(direction);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
-  }
-  int luaRespond(lua_State* state, StreamDirection direction) override {
-    UNREFERENCED_PARAMETER(state);
-    UNREFERENCED_PARAMETER(direction);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
-  }
+  void fileLog(const char*, int) override { NOT_REACHED_GCOVR_EXCL_LINE; }
+  int getOrCreateSharedTable() override { NOT_REACHED_GCOVR_EXCL_LINE; }
+  int getRouteConfiguration(envoy_lua_ffi_str_t*) override { NOT_REACHED_GCOVR_EXCL_LINE; }
+  uint64_t getRouteConfigHash() override { NOT_REACHED_GCOVR_EXCL_LINE; }
+  int luaBody(lua_State*, StreamDirection) override { NOT_REACHED_GCOVR_EXCL_LINE; }
+  int luaHttpCall(lua_State*, StreamDirection) override { NOT_REACHED_GCOVR_EXCL_LINE; }
+  int luaRespond(lua_State*, StreamDirection) override { NOT_REACHED_GCOVR_EXCL_LINE; }
 
   // StreamInfoInterface
-  const char* upstreamHost() override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
-  const char* upstreamCluster() override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
-  const char* downstreamLocalAddress() override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
-  const char* downstreamRemoteAddress() override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
-  int64_t startTime() override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
+  const char* upstreamHost() override { NOT_REACHED_GCOVR_EXCL_LINE; }
+  const char* upstreamCluster() override { NOT_REACHED_GCOVR_EXCL_LINE; }
+  const char* downstreamLocalAddress() override { NOT_REACHED_GCOVR_EXCL_LINE; }
+  const char* downstreamRemoteAddress() override { NOT_REACHED_GCOVR_EXCL_LINE; }
+  int64_t startTime() override { NOT_REACHED_GCOVR_EXCL_LINE; }
 
   // HeaderInterface
-  int getHeaderMapSize(LuaStreamOpSourceType type) override {
-    UNREFERENCED_PARAMETER(type);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+  int getHeaderMapSize(LuaStreamOpSourceType) override { NOT_REACHED_GCOVR_EXCL_LINE; }
+  int getHeaderMap(LuaStreamOpSourceType, envoy_lua_ffi_string_pairs*) override {
+    NOT_REACHED_GCOVR_EXCL_LINE;
   }
-  int getHeaderMap(LuaStreamOpSourceType type, envoy_lua_ffi_string_pairs* buf) override {
-    UNREFERENCED_PARAMETER(type);
-    UNREFERENCED_PARAMETER(buf);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+  int getHeaderMapValue(LuaStreamOpSourceType, absl::string_view, envoy_lua_ffi_str_t*) override {
+    NOT_REACHED_GCOVR_EXCL_LINE;
   }
-  int getHeaderMapValue(LuaStreamOpSourceType type, absl::string_view key,
-                        envoy_lua_ffi_str_t* value) override {
-    UNREFERENCED_PARAMETER(type);
-    UNREFERENCED_PARAMETER(key);
-    UNREFERENCED_PARAMETER(value);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+  int getHeaderMapValueSize(LuaStreamOpSourceType, absl::string_view) override {
+    NOT_REACHED_GCOVR_EXCL_LINE;
   }
-  int getHeaderMapValueSize(LuaStreamOpSourceType type, absl::string_view key) override {
-    UNREFERENCED_PARAMETER(type);
-    UNREFERENCED_PARAMETER(key);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+  int getHeaderMapValueIndex(LuaStreamOpSourceType, absl::string_view, envoy_lua_ffi_str_t*,
+                             int) override {
+    NOT_REACHED_GCOVR_EXCL_LINE;
   }
-  int getHeaderMapValueIndex(LuaStreamOpSourceType type, absl::string_view key,
-                             envoy_lua_ffi_str_t* value, int index) override {
-    UNREFERENCED_PARAMETER(type);
-    UNREFERENCED_PARAMETER(key);
-    UNREFERENCED_PARAMETER(value);
-    UNREFERENCED_PARAMETER(index);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+  int setHeaderMap(LuaStreamOpSourceType, envoy_lua_ffi_string_pairs*) override {
+    NOT_REACHED_GCOVR_EXCL_LINE;
   }
-  int setHeaderMap(LuaStreamOpSourceType type, envoy_lua_ffi_string_pairs* buf) override {
-    UNREFERENCED_PARAMETER(type);
-    UNREFERENCED_PARAMETER(buf);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+  int setHeaderMapValue(LuaStreamOpSourceType, absl::string_view, absl::string_view) override {
+    NOT_REACHED_GCOVR_EXCL_LINE;
   }
-  int setHeaderMapValue(LuaStreamOpSourceType type, absl::string_view key,
-                        absl::string_view value) override {
-    UNREFERENCED_PARAMETER(type);
-    UNREFERENCED_PARAMETER(key);
-    UNREFERENCED_PARAMETER(value);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
-  }
-  int removeHeaderMapValue(LuaStreamOpSourceType type, absl::string_view key) override {
-    UNREFERENCED_PARAMETER(type);
-    UNREFERENCED_PARAMETER(key);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+  int removeHeaderMapValue(LuaStreamOpSourceType, absl::string_view) override {
+    NOT_REACHED_GCOVR_EXCL_LINE;
   }
 
-  int getQueryParameters(envoy_lua_ffi_string_pairs* buf) override {
-    UNREFERENCED_PARAMETER(buf);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
-  }
+  int getQueryParameters(envoy_lua_ffi_string_pairs*) override { NOT_REACHED_GCOVR_EXCL_LINE; }
 
   // FilterMetadataInterface
-  int getMetadataValue(envoy_lua_ffi_str_t* filter_name, envoy_lua_ffi_str_t* key,
-                       envoy_lua_ffi_str_t* value) override {
-    UNREFERENCED_PARAMETER(filter_name);
-    UNREFERENCED_PARAMETER(key);
-    UNREFERENCED_PARAMETER(value);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+  int getMetadataValue(envoy_lua_ffi_str_t*, envoy_lua_ffi_str_t*, envoy_lua_ffi_str_t*) override {
+    NOT_REACHED_GCOVR_EXCL_LINE;
   }
 
-  int getDynamicMetadataValue(envoy_lua_ffi_str_t* filter_name, envoy_lua_ffi_str_t* key,
-                              envoy_lua_ffi_str_t* value) override {
-    UNREFERENCED_PARAMETER(filter_name);
-    UNREFERENCED_PARAMETER(key);
-    UNREFERENCED_PARAMETER(value);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+  int getDynamicMetadataValue(envoy_lua_ffi_str_t*, envoy_lua_ffi_str_t*,
+                              envoy_lua_ffi_str_t*) override {
+    NOT_REACHED_GCOVR_EXCL_LINE;
   }
 
   // BodyInterface
-  int getBody(LuaStreamOpSourceType type, envoy_lua_ffi_str_t* body) override {
-    UNREFERENCED_PARAMETER(type);
-    UNREFERENCED_PARAMETER(body);
-    NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
-  }
+  int getBody(LuaStreamOpSourceType, envoy_lua_ffi_str_t*) override { NOT_REACHED_GCOVR_EXCL_LINE; }
 
 private:
-  LuaVirtualMachine* vm_{};
+  std::shared_ptr<LuaVirtualMachine> vm_;
   std::shared_ptr<Plugin> plugin_;
 };
 

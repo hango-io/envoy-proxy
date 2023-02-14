@@ -1,6 +1,7 @@
-#include "common/http/proxy_header.h"
+#include "source/common/http/proxy_header.h"
 
-#include "common/http/header_utility.h"
+#include "source/common/http/header_map_impl.h"
+#include "source/common/http/header_utility.h"
 
 namespace Envoy {
 namespace Proxy {
@@ -10,7 +11,7 @@ namespace Http {
 void HeaderUtility::replaceHeaders(Envoy::Http::HeaderMap& headers,
                                    const Envoy::Http::HeaderMap& replace_headers) {
   headers.clear();
-  Envoy::Http::HeaderUtility::addHeaders(headers, replace_headers);
+  Envoy::Http::HeaderMapImpl::copyFrom(headers, replace_headers);
 }
 
 absl::string_view HeaderUtility::getHeaderValue(const Envoy::Http::LowerCaseString& key,

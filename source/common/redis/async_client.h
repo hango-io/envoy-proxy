@@ -1,18 +1,16 @@
-#include "hiredis/hiredis.h"
-#include "hiredis/async.h"
-#include "hiredis/adapters/libevent.h"
-
-// 对于 C++ 17 及以上版本，应当使用 std::optional 来替代
-#include "absl/types/optional.h"
-#include "absl/strings/string_view.h"
-
 #include <chrono>
-#include <string>
-#include <vector>
 #include <functional>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
-#include "common/common/logger.h"
+#include "source/common/common/logger.h"
+
+#include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
+#include "hiredis/adapters/libevent.h"
+#include "hiredis/async.h"
+#include "hiredis/hiredis.h"
 
 namespace Envoy {
 namespace Proxy {
@@ -31,9 +29,9 @@ class AsyncClient : public Logger::Loggable<Logger::Id::redis> {
 public:
   enum Status {
     // 未初始化或者连接断开后资源被清理
-    NOT_INIT,
+    NOT_INIT, // NOLINT
     // 初始化失败
-    INIT_ERROR,
+    INIT_ERROR, // NOLINT
     // 正在尝试连接当中
     CONNECTING,
     // 已经连接但是未必能够提供服务
@@ -99,7 +97,7 @@ private:
   void connect();
 
   static void authenticateCb(redisAsyncContext* c, void* void_reply, void*) {
-    AsyncClient* client = (AsyncClient*)c->data;
+    AsyncClient* client = (AsyncClient*)c->data; // NOLINT
 
     if (!client) {
       ENVOY_LOG_TO_LOGGER(Envoy::Logger::Registry::getLog(Envoy::Logger::Id::redis), debug,
@@ -107,7 +105,7 @@ private:
       return;
     }
 
-    redisReply* reply = (redisReply*)(void_reply);
+    redisReply* reply = (redisReply*)(void_reply); // NOLINT
     if (reply && strncmp(reply->str, "OK", 2) == 0) {
       client->client_status_ = WORKING;
     } else {
@@ -125,7 +123,7 @@ private:
   }
 
   static void connectCb(const redisAsyncContext* c, int status) {
-    AsyncClient* client = (AsyncClient*)c->data;
+    AsyncClient* client = (AsyncClient*)c->data; // NOLINT
 
     if (!client) {
       ENVOY_LOG_TO_LOGGER(Envoy::Logger::Registry::getLog(Envoy::Logger::Id::redis), debug,
@@ -163,7 +161,7 @@ private:
   }
 
   static void disconnectCb(const redisAsyncContext* c, int status) {
-    AsyncClient* client = (AsyncClient*)c->data;
+    AsyncClient* client = (AsyncClient*)c->data; // NOLINT
     // 重置 redis async context 将可能触发 disconnectCb。此时不做任何操作
     if (REDIS_OK == status || !client) {
       // 主动断开连接无需任何其他操作
@@ -182,10 +180,12 @@ private:
     client->waitingToReconnect();
   }
 
-  static void reconnectCb(evutil_socket_t, short, void* arg) { ((AsyncClient*)arg)->connect(); }
+  static void reconnectCb(evutil_socket_t, short, void* arg) {
+    ((AsyncClient*)arg)->connect(); // NOLINT
+  }
 
   static void commandCb(redisAsyncContext* c, void* void_reply, void* void_id) {
-    AsyncClient* client = (AsyncClient*)c->data;
+    AsyncClient* client = (AsyncClient*)c->data; // NOLINT
 
     if (!client) {
       ENVOY_LOG_TO_LOGGER(Envoy::Logger::Registry::getLog(Envoy::Logger::Id::redis), debug,
@@ -194,7 +194,7 @@ private:
     }
 
     auto& commands_map = client->commands_map_;
-    unsigned long command_id = (unsigned long)void_id;
+    unsigned long command_id = (unsigned long)void_id; // NOLINT
 
     auto command_callback = commands_map.find(command_id);
 
@@ -202,7 +202,7 @@ private:
       return;
     }
 
-    redisReply* reply = (redisReply*)(void_reply);
+    redisReply* reply = (redisReply*)(void_reply); // NOLINT
 
     if (reply != nullptr && reply->str != nullptr) {
       command_callback->second(std::string(reply->str, reply->len), absl::nullopt);
@@ -228,8 +228,9 @@ private:
 
     // 客户端不会主动断开连接，如果在 free context 之前 context 处于
     // 连接断开中的状态，说明客户端被异常断开，由 hiredis 自动回收内存
-    if (to_free && !(to_free->c.flags & REDIS_DISCONNECTING))
+    if (to_free && !(to_free->c.flags & REDIS_DISCONNECTING)) {
       redisAsyncFree(to_free);
+    }
 
     // 清理所有回调函数
     for (const auto& cb : commands_map_) {
@@ -258,7 +259,6 @@ private:
     evtimer_add(reconnect_event_, &reconnect_interval_);
 
     client_status_ = CONNECTING;
-    return;
   }
 
   Status client_status_{NOT_INIT};

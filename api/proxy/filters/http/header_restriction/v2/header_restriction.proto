@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package proxy.filters.http.header_restriction.v2;
+
+option java_package = "proxy.filters.http.header_restriction.v2";
+option java_outer_classname = "header_restrictionProto";
+option java_multiple_files = true;
+
+import "validate/validate.proto";
+import "api/proxy/common/matcher/v3/matcher.proto";
+
+enum ListType {
+  BLACK = 0;
+  WHITE = 1;
+}
+
+message HeaderRestriction {
+  ListType type = 1;
+  repeated proxy.common.matcher.v3.CommonMatcher list = 2;
+}
+
+message ProtoCommonConfig {
+  HeaderRestriction config = 1;
+}
+
+enum Strategy {
+  OVERRIDE = 0; // override the config of filter level. default.
+  PRIORTO = 1;  // merge and prior to the config of filter level
+}
+
+message ProtoRouteConfig {
+  oneof override {
+    option (validate.required) = true;
+
+    HeaderRestriction config = 1;
+
+    // 在当前路由上禁用该插件，所有设置不生效。
+    // bool disabled = 2 [(validate.rules).bool = {const: true}];
+    bool disabled = 2;
+  }
+  Strategy strategy = 3;
+}

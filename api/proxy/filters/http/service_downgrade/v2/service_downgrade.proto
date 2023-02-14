@@ -1,0 +1,40 @@
+
+syntax = "proto3";
+
+package proxy.filters.http.service_downgrade.v2;
+
+option java_package = "proxy.filters.http.service_downgrade.v2";
+option java_outer_classname = "ServiceDowngradeProto";
+option java_multiple_files = true;
+
+import "api/proxy/common/matcher/v3/matcher.proto";
+
+import "google/protobuf/duration.proto";
+
+import "validate/validate.proto";
+
+message DowngradeRemote {
+  string cluster = 1 [(validate.rules).string.min_bytes = 1];
+  // Sets the maximum duration in milliseconds that a response can take to
+  // arrive upon request.
+  google.protobuf.Duration timeout = 2 [(validate.rules).duration.required = true];
+}
+
+message ProtoCommonConfig {
+  // A remote http service used to downgrade.
+  DowngradeRemote used_remote = 1;
+}
+
+message ProtoRouteConfig {
+  // To determine downgrade or not
+  proxy.common.matcher.v3.CommonMatcher downgrade_rqx = 1;
+  proxy.common.matcher.v3.CommonMatcher downgrade_rpx = 2
+      [(validate.rules).message.required = true];
+
+  // The HTTP URI. It should be a full FQDN with protocol, host and path.
+  string downgrade_uri = 3;
+
+  // If this field is set, the cluster name and timeout in this field are used
+  // during the downgrade process, ignoring the global configuration.
+  DowngradeRemote override_remote = 4;
+}

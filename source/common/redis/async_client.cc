@@ -1,5 +1,7 @@
-#include "common/redis/async_client.h"
+#include "source/common/redis/async_client.h"
+
 #include <iostream>
+
 namespace Envoy {
 namespace Proxy {
 namespace Common {
@@ -31,10 +33,10 @@ void AsyncClient::connect() {
   ENVOY_LOG(debug, "Try create context and connect to {}:{}", options_.endpoint.tcp.ip,
             options_.endpoint.tcp.port);
   redis_async_context_ = redisAsyncConnectWithOptions(&options_);
-  if (!redis_async_context_ || redis_async_context_->err) {
+  if (redis_async_context_ == nullptr || redis_async_context_->err) {
     ENVOY_LOG(error, "Cannot create redis async context and check your config/network");
-    if (redis_async_context_->errstr) {
-      ENVOY_LOG(error, "    Error: {}", redis_async_context_->errstr);
+    if (redis_async_context_ != nullptr && redis_async_context_->errstr != nullptr) {
+      ENVOY_LOG(error, "    Error: {}", absl::string_view(redis_async_context_->errstr));
     }
     resetAsyncContext(INIT_ERROR);
     return;
@@ -71,6 +73,7 @@ void AsyncClient::get(const std::string& key, CommandCallback callback) {
   unsigned long command_id = next_command_id_++;
   commands_map_[command_id] = callback;
 
+  // NOLINTNEXTLINE
   redisAsyncCommand(redis_async_context_, commandCb, (void*)command_id, "GET %s", key.c_str());
 }
 

@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package proxy.filters.http.super_cache.v2;
+
+option java_package = "proxy.filters.http.super_cache.v2";
+option java_outer_classname = "SuperCacheProto";
+option java_multiple_files = true;
+
+import "api/proxy/common/cache_api/v3/cache_api.proto";
+import "api/proxy/common/matcher/v3/matcher.proto";
+
+import "validate/validate.proto";
+
+// listener level config
+message HttpCache {
+  // if apis_prefix is not empty filter will
+  // extend admin api and use this as prefix
+  // Keep apis_prefix "unique"
+  string apis_prefix = 1;
+  repeated proxy.common.cache_api.v3.Cache used_caches = 2;
+}
+
+// route level config
+message CacheConfig {
+  proxy.common.matcher.v3.CommonMatcher enable_rqx = 1;
+  proxy.common.matcher.v3.CommonMatcher enable_rpx = 2;
+
+  // expire time of data. 0 expire time
+  // or no expire time will disable cache
+  map<string, proxy.common.cache_api.v3.CacheTTL> cache_ttls = 3;
+  proxy.common.cache_api.v3.HttpCacheKeyMaker key_maker = 4;
+
+  bool low_level_fill = 5;
+}
